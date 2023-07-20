@@ -41,13 +41,13 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 							<div class="font-weight-bolder"><?= isset($name) ? $name : '' ?></div>
 							<div class="text-meted"><small>Posted <i class="far fa-calendar"></i> <?= isset($date_created) ?  date("M d, Y h:i A", strtotime($date_created)): '' ?></small></div>
 							<div class="col-auto ml-auto text-right">
-				<!-- Display coin_value on the right side -->
-				<div class="col-auto ml-auto text-right">
-  <!-- Display coin_value on the right side -->
-  <div class="font-weight-bolder"><?= $coin_value ?> Coins</div>
-</div>
+								<!-- Display coin_value on the right side -->
+								<div class="col-auto ml-auto text-right">
+								<!-- Display coin_value on the right side -->
+								<div class="font-weight-bolder"><?= $coin_value ?> Coins</div>
+								</div>
 
-        	</div>
+							</div>
 							</div>
 						</div>
 					</div>
