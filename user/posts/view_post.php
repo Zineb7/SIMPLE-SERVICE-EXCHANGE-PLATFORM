@@ -1,7 +1,7 @@
 <?php
 
 if(isset($_GET['id']) && $_GET['id'] > 0){
-    $qry = $conn->query("SELECT p.*, concat(m.firstname, ' ', coalesce(concat(m.middlename,' '),''),m.lastname) as `name`, m.avatar, COALESCE((SELECT count(member_id) FROM `like_list` where post_id = p.id),0) as `likes`, COALESCE((SELECT count(member_id) FROM `comment_list` where post_id = p.id),0) as `comments` FROM post_list p inner join `member_list` m on p.member_id = m.id where p.id = '{$_GET['id']}' and p.member_id = '{$_settings->userdata('id')}'");
+    $qry = $conn->query("SELECT p.*, concat(m.firstname, ' ', coalesce(concat(m.middlename,' '),''),m.lastname) as `name`, m.avatar, COALESCE((SELECT count(member_id) FROM `like_list` where post_id = p.id),0) as `likes`, COALESCE((SELECT count(member_id) FROM `comment_list` where post_id = p.id),0) as `comments`, p.coin_value FROM post_list p inner join `member_list` m on p.member_id = m.id where p.id = '{$_GET['id']}' and p.member_id = '{$_settings->userdata('id')}'");
     if($qry->num_rows > 0){
         foreach($qry->fetch_assoc() as $k => $v){
             $$k=$v;
@@ -40,6 +40,14 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 							<div style="line-height:1em">
 							<div class="font-weight-bolder"><?= isset($name) ? $name : '' ?></div>
 							<div class="text-meted"><small>Posted <i class="far fa-calendar"></i> <?= isset($date_created) ?  date("M d, Y h:i A", strtotime($date_created)): '' ?></small></div>
+							<div class="col-auto ml-auto text-right">
+				<!-- Display coin_value on the right side -->
+				<div class="col-auto ml-auto text-right">
+  <!-- Display coin_value on the right side -->
+  <div class="font-weight-bolder"><?= $coin_value ?> Coins</div>
+</div>
+
+        	</div>
 							</div>
 						</div>
 					</div>

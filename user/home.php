@@ -16,7 +16,7 @@
 		m.avatar, 
 		COALESCE((SELECT count(member_id) FROM `like_list` WHERE post_id = p.id), 0) as `likes`, 
 		COALESCE((SELECT count(member_id) FROM `comment_list` WHERE post_id = p.id), 0) as `comments`, 
-		m.coin
+		p.coin_value
 		FROM post_list p 
 		INNER JOIN `member_list` m ON p.member_id = m.id 
 		ORDER BY unix_timestamp(p.date_updated) DESC");
@@ -36,7 +36,7 @@
                 <div class="text-meted"><small>Posted <i class="far fa-calendar"></i> <?=  date("M d, Y h:i A", strtotime($row['date_created'])) ?></small></div>
 				<div class="col-auto ml-auto text-right">
 				<!-- Display coin_value on the right side -->
-				<div class="font-weight-bolder"><?= $row['coin'] ?> Coins</div>
+				<div class="font-weight-bolder"><?= $row['coin_value'] ?> Coins</div>
         	</div>
     
 			</div>
