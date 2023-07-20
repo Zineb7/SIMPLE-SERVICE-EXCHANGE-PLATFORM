@@ -112,6 +112,10 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 					<span class="like-count font-style-italic"><?= isset($likes) ? format_num($likes) : 0 ?></span>
 					<a href="javascript:void(0)" class="text-reset text-decoration-none post_comments" data-id="<?= isset($id) ? $id : '' ?>"><i class="far fa-comment"></i></a>
 					<span class="comment-count font-style-italic"><?= isset($comments) ? format_num($comments) : 0 ?></span>
+					<!--CHECKHANDS ICON-->
+					<a href="javascript:void(0)" class="text-reset text-decoration-none post_comments float-right" data-id="<?= $row['id'] ?>">
+					<i class="far fa-handshake fa-sm"></i>
+					</a>
 					<hr class="mx-n4 mb-3">
 					<div class="mx-n4">
 						<div class="list-group mb-3">
