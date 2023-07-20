@@ -92,7 +92,7 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 							<?php endif; ?>
 							<?php endif; ?>
 							
-							?>
+							
 						</div>
 
 					<hr class="mx-n4">
