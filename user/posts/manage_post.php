@@ -27,6 +27,22 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 		<div class="form-group mb-3">
 			<label for="caption" class="control-label">Caption</label>
 			<textarea rows="3" class="form-control form-control-sm rounded-0" id="caption" name="caption" required="required"><?= isset($caption) ? $caption : '' ?></textarea>
+			<!--COINVALUE,TAGS, OPTIONS-->
+			<!--<div class="form-group mb-3">
+				<label for="coin_value" class="control-label">Coin Value</label>
+				<input type="number" class="form-control form-control-sm rounded-0" id="coin_value" name="coin_value" value="<?= isset($coin_value) ? $coin_value : 0 ?>" required="required">
+			</div>
+
+			<div class="form-group mb-3">
+				<label for="tags" class="control-label">Tags</label>
+				<input type="text" class="form-control form-control-sm rounded-0" id="tags" name="tags" value="<?= isset($tags) ? $tags : '' ?>" required="required">
+			</div>
+			<div class="form-group mb-3">
+			<label for="options" class="control-label">Options</label>
+			<select class="form-control form-control-sm rounded-0" id="options" name="options[]" multiple="multiple">
+				
+			</select>
+			-->
 			<div id="upload-images" class="mt-4">
 				<h4 class="font-weight-bolder" id="upload-text">Drop your Photos Here</h4>
 				<div id="holder" class="w-100 px-3">

@@ -1,3 +1,4 @@
+
 <style>
 	.avatar-img{
       height: 3em;
@@ -10,14 +11,22 @@
   <div class="row justify-content-center">
     <div class="col-lg-6 col-md-8 col-sm-12 col-xs-12">
       <?php 
-       $qry = $conn->query("SELECT p.*, concat(m.firstname, ' ', coalesce(concat(m.middlename,' '),''),m.lastname) as `name`, m.avatar, COALESCE((SELECT count(member_id) FROM `like_list` where post_id = p.id),0) as `likes`, COALESCE((SELECT count(member_id) FROM `comment_list` where post_id = p.id),0) as `comments` FROM post_list p inner join `member_list` m on p.member_id = m.id order by unix_timestamp(p.date_updated) desc");
-       while($row = $qry->fetch_assoc()):
+		$qry = $conn->query("SELECT p.*, 
+		concat(m.firstname, ' ', coalesce(concat(m.middlename,' '),''), m.lastname) as `name`, 
+		m.avatar, 
+		COALESCE((SELECT count(member_id) FROM `like_list` WHERE post_id = p.id), 0) as `likes`, 
+		COALESCE((SELECT count(member_id) FROM `comment_list` WHERE post_id = p.id), 0) as `comments`, 
+		m.coin
+		FROM post_list p 
+		INNER JOIN `member_list` m ON p.member_id = m.id 
+		ORDER BY unix_timestamp(p.date_updated) DESC");
+   while($row = $qry->fetch_assoc()):
 			  $qry_like = $conn->query("SELECT post_id FROM `like_list` where post_id = '{$row['id']}' and member_id = '{$_settings->userdata('id')}'")->num_rows > 0;
       ?>
       <div class="card rounded-0 shadow">
         <div class="card-body">
           <div class="container-fluid">
-            <div class="d-flex w-100 align-items-center">
+            <div class="d-flex w-100 justify-content-between align-items-center">
               <div class="col-auto">
                 <img src="<?= validate_image($row['avatar']) ?>" alt="" class="avatar-img img-thumbnail rounded-circle p-0">
               </div>
@@ -25,8 +34,14 @@
                 <div style="line-height:1em">
                 <div class="font-weight-bolder"><?= $row['name'] ?></div>
                 <div class="text-meted"><small>Posted <i class="far fa-calendar"></i> <?=  date("M d, Y h:i A", strtotime($row['date_created'])) ?></small></div>
-                </div>
+				<div class="col-auto ml-auto text-right">
+				<!-- Display coin_value on the right side -->
+				<div class="font-weight-bolder"><?= $row['coin'] ?> Coins</div>
+        	</div>
+    
+			</div>
               </div>
+			  
             </div>
             <hr>
             <div>
@@ -34,7 +49,7 @@
               <a href="javascript:void(0)" class="seemore d-none">Read More</a>
               <a href="javascript:void(0)" class="seeless d-none">Show Less</a>
             </div>
-            <div class="container-fluid bg-gradient-dark" style="height: 30em !important">
+            <div class="container-fluid bg-gradient-light" style="height: 30em !important">
               <?php 
               if(isset($row['upload_path']) && is_dir(base_app.$row['upload_path'])):
               $files = array();
@@ -84,7 +99,26 @@
             <span class="like-count font-style-italic"><?= format_num($row['likes']) ?></span>
             <a href="javascript:void(0)" class="text-reset text-decoration-none post_comments" data-id="<?= $row['id'] ?>"><i class="far fa-comment"></i></a>
             <span class="comment-count font-style-italic"><?= format_num($row['comments']) ?></span>
-            <hr class="mx-n4 mb-3">
+			<!--CHECKHANDS ICON-->
+			<a href="javascript:void(0)" class="text-reset text-decoration-none post_comments float-right" data-id="<?= $row['id'] ?>">
+			<i class="far fa-handshake fa-sm"></i>
+			</a>
+			<!-- Your existing HTML code here -->
+			<!-- 
+			<script>
+			$(function() {
+				$('.post_comments').click(function() {
+				// Get the post ID from the data-id attribute of the clicked element
+				var postId = $(this).data('id');
+
+				// Perform your action here, for example, show an alert message
+				alert('You clicked on the handshake icon for post ID ' + postId);
+				});
+			});
+			</script>
+			-->
+
+			<hr class="mx-n4 mb-3">
             <div class="mx-n4">
               <div class="list-group mb-3">
                 <?php 
