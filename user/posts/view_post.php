@@ -50,9 +50,9 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 						<a href="javascript:void(0)" class="seeless d-none">Show Less</a>
 					</div>
 					<!-- Hide the posts photo -->
-					<div class="container-fluid bg-gradient-dark" style="height: 30em !important">
+					<div class="container-fluid bg-gradient-light" style="height: 30em !important">
 							<?php 
-							/*
+							
 							if(isset($upload_path) && is_dir(base_app.$upload_path)):
 							$files = array();
 							$fopen = scandir(base_app.$upload_path);
@@ -91,7 +91,7 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 							</div>
 							<?php endif; ?>
 							<?php endif; ?>
-							*/
+							
 							?>
 						</div>
 
