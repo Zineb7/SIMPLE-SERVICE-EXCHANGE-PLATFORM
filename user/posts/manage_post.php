@@ -20,6 +20,75 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 		border: 2px dashed gray;
 		position: running;
 	}
+	a {
+    color:#fff;
+}
+.dropdown dd, .dropdown dt {
+    margin:0px;
+    padding:0px;
+}
+.dropdown ul {
+    margin: -1px 0 0 0;
+}
+.dropdown dd {
+    position:relative;
+}
+.dropdown a, 
+.dropdown a:visited {
+    color:#fff;
+    text-decoration:none;
+    outline:none;
+    font-size: 12px;
+}
+.dropdown dt a {
+    background-color:#6C757D;
+    display:block;
+    padding: 8px 20px 5px 10px;
+    min-height: 25px;
+    line-height: 24px;
+    overflow: hidden;
+    border:0;
+    width:272px;
+}
+.dropdown dt a span, .multiSel span {
+    cursor:pointer;
+    display:inline-block;
+    padding: 0 3px 2px 0;
+}
+.dropdown dd ul {
+    background-color: #6C757D;
+    border:0;
+    color:#fff;
+    display:none;
+    left:0px;
+    padding: 2px 15px 2px 5px;
+    position:absolute;
+    top:2px;
+    width:280px;
+    list-style:none;
+    height: 100px;
+    overflow: auto;
+}
+.dropdown span.value {
+    display:none;
+}
+.dropdown dd ul li a {
+    padding:5px;
+    display:block;
+}
+.dropdown dd ul li a:hover {
+    background-color:#fff;
+}
+button {
+  background-color: #6BBE92;
+  width: 302px;
+  border: 0;
+  padding: 10px 0;
+  margin: 5px 0;
+  text-align: center;
+  color: #fff;
+  font-weight: bold;
+}
 </style>
 <div class="container-fluid">
 	<form action="" id="post-form">
@@ -37,13 +106,48 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 				<label for="tag" class="control-label">Tags</label>
 				<input type="text" class="form-control form-control-sm rounded-0" id="tag" name="tag" value="<?= isset($tag) ? $tag : '' ?>" required="required">
 			</div>
-			<!--
-			<div class="form-group mb-3">
-			<label for="options" class="control-label">Options</label>
-			<select class="form-control form-control-sm rounded-0" id="options" name="options[]" multiple="multiple">
-				
-			</select>
-			-->
+			<?php 
+			//list id option and name from options_list table
+			function get_options() {
+
+				$db = new DBConnection;
+				$conn = $db->conn;
+				$qry = $conn->query("SELECT id, name FROM options_list");  
+
+				if ($qry && $qry->num_rows > 0) {
+					while ($row = $qry->fetch_assoc()) {
+						$options[] = $row;
+					}
+				}
+
+				return $options;
+			}
+			$options = get_options();
+			?>
+			<!--THIS IS THE DROP DOWN LIST OF OPTIONS-->
+			<dl class="dropdown">
+				<dt>
+					<a href="#">
+						<span class="hida">Select</span>
+						<p class="multiSel"></p>
+					</a>
+				</dt>
+				<dd>
+					<div class="mutliSelect">
+						<ul>
+							<?php foreach ($options as $option) : ?>
+								<li>
+									<?php
+									$optionId = 'options_list' . $option['id']; // Unique ID for each checkbox
+									?>
+									<input type="checkbox" value="<?php echo $option['id']; ?>" id="<?php echo $optionId; ?>" name="options_list[]" onchange="updateSelectedNames(this);" />
+									<label for="<?php echo $optionId; ?>"><?php echo $option['name']; ?></label>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					</div>
+				</dd>
+			</dl>
 			<div id="upload-images" class="mt-4">
 				<h4 class="font-weight-bolder" id="upload-text">Drop your Photos Here</h4>
 				<div id="holder" class="w-100 px-3">
@@ -174,4 +278,58 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 		})
 
 	})
+	//DISPLAYED VALUES AFTER CHECKING BOXES OPTIONS
+	function updateSelectedNames(checkbox) {
+		const selectedNames = [];
+		const checkboxes = document.querySelectorAll('input[name="options_list[]"]:checked');
+		checkboxes.forEach((checkbox) => {
+			const label = checkbox.nextElementSibling;
+			selectedNames.push(label.textContent);
+		});
+
+		const multiSel = document.querySelector('.multiSel');
+		multiSel.textContent = selectedNames.join(', ');
+	}
+	/*
+	Dropdown with Multiple checkbox select with jQuery - May 27, 2013
+	(c) 2013 @ElmahdiMahmoud
+	license: https://www.opensource.org/licenses/mit-license.php
+	*/ 
+
+	$(".dropdown dt a").on('click', function () {
+	$(".dropdown dd ul").slideToggle('fast');
+	});
+
+	$(".dropdown dd ul li a").on('click', function () {
+	$(".dropdown dd ul").hide();
+	});
+
+	function getSelectedValue(id) {
+	return $("#" + id).find("dt a span.value").html();
+	}
+
+	$(document).bind('click', function (e) {
+	var $clicked = $(e.target);
+	if (!$clicked.parents().hasClass("dropdown")) {
+		$(".dropdown dd ul").hide()
+	};
+	});
+
+
+	$('.mutliSelect input[type="checkbox"]').on('click', function () {
+
+	var title = $(this).closest('.mutliSelect').find('input[type="checkbox"]').val(),
+		title = $(this).val() + ",";
+
+	if ($(this).is(':checked')) {
+		var html = '<span title="' + title + '">' + title + '</span>';
+		$('.multiSel').append(html);
+		$(".hida").hide();
+	}else {
+		$('span[title="' + title + '"]').remove();
+		var ret = $(".hida");
+		$('.dropdown dt a').append(ret);
+	}
+
+	});
 </script>
