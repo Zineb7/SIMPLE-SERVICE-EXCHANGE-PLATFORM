@@ -140,7 +140,7 @@ button {
 									<?php
 									$optionId = 'options_list' . $option['id']; // Unique ID for each checkbox
 									?>
-									<input type="checkbox" value="<?php echo $option['id']; ?>" id="<?php echo $optionId; ?>" name="options_list[]" onchange="updateSelectedNames(this);" />
+									<input type="checkbox" value="<?php echo $option['id']; ?>" id="<?php echo $optionId; ?>" name="<?php echo $optionId; ?>" onchange="updateSelectedNames(this);" />
 									<label for="<?php echo $optionId; ?>"><?php echo $option['name']; ?></label>
 								</li>
 							<?php endforeach; ?>

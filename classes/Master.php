@@ -59,13 +59,21 @@ Class Master extends DBConnection {
 		}
 		extract($_POST);
 		$data = "";
+		$optionslist = "";
 		foreach($_POST as $k =>$v){
 			if(!in_array($k,array('id'))){
+				if (str_contains($k, 'options_list')) {
+				
+				$optionslist .=str_replace('options_list',"",$k) .";";	
+				}else{
 				if(!empty($data)) $data .=",";
 				$v = $this->conn->real_escape_string($v);
 				$data .= " `{$k}`='{$v}' ";
+				}
 			}
 		}
+		$data .= ", `options`='{$optionslist}' ";
+ 
 		if(empty($id)){
 			$sql = "INSERT INTO `post_list` set {$data} ";
 		}else{
