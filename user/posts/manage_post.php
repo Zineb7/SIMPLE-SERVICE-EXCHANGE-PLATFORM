@@ -99,7 +99,7 @@ button {
 			<!--COINVALUE,TAGS, OPTIONS-->
 			<div class="form-group mb-3">
 				<label for="coin_value" class="control-label">Coin Value</label>
-				<input type="number" class="form-control form-control-sm rounded-0" id="coin_value" name="coin_value" value="<?= isset($coin_value) ? $coin_value : 0 ?>" required="required">
+				<input type="number" min="0" max="1000" class="form-control form-control-sm rounded-0" id="coin_value" name="coin_value" value="<?= isset($coin_value) ? $coin_value : 0 ?>" required="required">
 			</div>
 
 			<div class="form-group mb-3">
@@ -112,7 +112,7 @@ button {
 
 				$db = new DBConnection;
 				$conn = $db->conn;
-				$qry = $conn->query("SELECT id, name FROM options_list");  
+				$qry = $conn->query("SELECT * FROM options_list");  
 
 				if ($qry && $qry->num_rows > 0) {
 					while ($row = $qry->fetch_assoc()) {
@@ -140,8 +140,8 @@ button {
 									<?php
 									$optionId = 'options_list' . $option['id']; // Unique ID for each checkbox
 									?>
-									<input type="checkbox" value="<?php echo $option['id']; ?>" id="<?php echo $optionId; ?>" name="<?php echo $optionId; ?>" onchange="updateSelectedNames(this);" />
-									<label for="<?php echo $optionId; ?>"><?php echo $option['name']; ?></label>
+									<input type="checkbox" value="<?php echo $option['coin_value']; ?>" id="<?php echo $optionId; ?>" name="<?php echo $optionId; ?>" onchange="updateSelectedNames(this);" />
+									<label for="<?php echo $optionId; ?>"><?php echo $option['name']." ".$option['coin_value'].""; ?></label>
 								</li>
 							<?php endforeach; ?>
 						</ul>
@@ -281,20 +281,23 @@ button {
 	//DISPLAYED VALUES AFTER CHECKING BOXES OPTIONS
 	function updateSelectedNames(checkbox) {
 		const selectedNames = [];
-		const checkboxes = document.querySelectorAll('input[name="options_list[]"]:checked');
+		var coinstotalmin=0;
+		const checkboxes = document.querySelectorAll('input[name^="options_list"]:checked');
 		checkboxes.forEach((checkbox) => {
 			const label = checkbox.nextElementSibling;
 			selectedNames.push(label.textContent);
+			coinstotalmin=coinstotalmin+Number(checkbox.value);
 		});
 
 		const multiSel = document.querySelector('.multiSel');
 		multiSel.textContent = selectedNames.join(', ');
+		
+			const coin_valuemin = document.querySelector('#coin_value');
+		coin_valuemin.value = coinstotalmin;
+		coin_valuemin.min = coinstotalmin;
 	}
-	/*
-	Dropdown with Multiple checkbox select with jQuery - May 27, 2013
-	(c) 2013 @ElmahdiMahmoud
-	license: https://www.opensource.org/licenses/mit-license.php
-	*/ 
+ 
+
 
 	$(".dropdown dt a").on('click', function () {
 	$(".dropdown dd ul").slideToggle('fast');
