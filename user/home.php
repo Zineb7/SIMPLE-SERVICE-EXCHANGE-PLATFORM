@@ -14,7 +14,8 @@
 		$qry = $conn->query("SELECT p.*, 
 		concat(m.firstname, ' ', coalesce(concat(m.middlename,' '),''), m.lastname) as `name`, 
 		m.avatar, 
-		COALESCE((SELECT count(member_id) FROM `like_list` WHERE post_id = p.id), 0) as `likes`, 
+		COALESCE((SELECT count(member_id) FROM `like_list` WHERE post_id = p.id), 0) as `likes`,
+        COALESCE((SELECT count(member_id) FROM `checkhand_list` WHERE post_id = p.id), 0) as `checkhand`,		
 		COALESCE((SELECT count(member_id) FROM `comment_list` WHERE post_id = p.id), 0) as `comments`, 
 		p.coin_value
 		FROM post_list p 
@@ -22,6 +23,8 @@
 		ORDER BY unix_timestamp(p.date_updated) DESC");
    while($row = $qry->fetch_assoc()):
 			  $qry_like = $conn->query("SELECT post_id FROM `like_list` where post_id = '{$row['id']}' and member_id = '{$_settings->userdata('id')}'")->num_rows > 0;
+			  $qry_checkhand = $conn->query("SELECT post_id FROM `checkhand_list` where post_id = '{$row['id']}' and member_id = '{$_settings->userdata('id')}'")->num_rows > 0;
+			  
       ?>
       <div class="card rounded-0 shadow">
         <div class="card-body">
@@ -100,9 +103,10 @@
             <a href="javascript:void(0)" class="text-reset text-decoration-none post_comments" data-id="<?= $row['id'] ?>"><i class="far fa-comment"></i></a>
             <span class="comment-count font-style-italic"><?= format_num($row['comments']) ?></span>
 			<!--CHECKHANDS ICON-->
-			<a href="javascript:void(0)" class="text-reset text-decoration-none post_comments float-right" data-id="<?= $row['id'] ?>">
-			<i class="far fa-handshake fa-sm"></i>
-			</a>
+			<?php $clr_checkhand=(isset($qry_checkhand) && !! $qry_checkhand)?"text-success" :"text-info"; ?>
+			<a href="javascript:void(0)" class="text-reset text-decoration-none like_post " data-id="<?= $row['id'] ?>">	<i class="far fa-handshake fa-sm <?= $clr_checkhand; ?>"></i></a>
+			<span class="like-count font-style-italic "><?= format_num($row['checkhand']) ?></span>
+			
 			<!-- Your existing HTML code here -->
 			<!-- 
 			<script>
