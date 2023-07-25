@@ -69,7 +69,9 @@ if ($qry_options->num_rows > 0) {
 					<!-- Diplay post's infos -->
 					<div class="truncate-5 truncated-text">
 						<?= isset($caption) ? str_replace(["\n\r", "\n", "\r"], "<br />", $caption) : '' ?>
+						<?php if (!empty($row['tag'])) : ?>
 						<?= isset($tag) ? '<br /><strong>Tags:</strong> ' . str_replace(["\n\r", "\n", "\r"], "<br />", $tag) : '' ?>
+						<?php endif; ?>
 						<?php if (!empty($options)) : ?>
 							<br /><strong>Options:</strong>
 								<?php foreach ($options as $option) : ?>

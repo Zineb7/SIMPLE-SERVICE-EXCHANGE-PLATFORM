@@ -63,7 +63,7 @@
 				<?= str_replace(["\n\r","\n","\r"], "<br />", $row['caption'])  ?>
 				<!--TAG-->
 					<?php if (!empty($row['tag'])) : ?>
-					<br><strong>Tags:</strong><?= str_replace(["\n\r","\n","\r"], "<br />", $row['tag']) ?>
+					<br><strong>Tags: </strong><?= str_replace(["\n\r","\n","\r"], "<br />", $row['tag']) ?>
 				<?php endif; ?>
 				<!--OPTIONS-->
 				<?php if (!empty($options)) : ?>
