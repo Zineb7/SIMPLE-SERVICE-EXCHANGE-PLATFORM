@@ -1,19 +1,32 @@
 <?php
 
 if(isset($_GET['id']) && $_GET['id'] > 0){
-    $qry = $conn->query("SELECT p.*, concat(m.firstname, ' ', coalesce(concat(m.middlename,' '),''),m.lastname) as `name`, m.avatar, COALESCE((SELECT count(member_id) FROM `like_list` where post_id = p.id),0) as `likes`, COALESCE((SELECT count(member_id) FROM `comment_list` where post_id = p.id),0) as `comments`, p.coin_value FROM post_list p inner join `member_list` m on p.member_id = m.id where p.id = '{$_GET['id']}' and p.member_id = '{$_settings->userdata('id')}'");
+    $qry = $conn->query("SELECT p.*, concat(m.firstname, ' ', coalesce(concat(m.middlename,' '),''),m.lastname) as `name`, m.avatar, COALESCE((SELECT count(member_id) FROM `like_list` where post_id = p.id),0) as `likes`, COALESCE((SELECT count(member_id) FROM `comment_list` where post_id = p.id),0) as `comments`, p.coin_value, p.tag FROM post_list p inner join `member_list` m on p.member_id = m.id where p.id = '{$_GET['id']}' and p.member_id = '{$_settings->userdata('id')}'");
     if($qry->num_rows > 0){
         foreach($qry->fetch_assoc() as $k => $v){
             $$k=$v;
         }
 		if(isset($id)){
+		
 			$qry_like = $conn->query("SELECT post_id FROM `like_list` where post_id = '{$id}' and member_id = '{$_settings->userdata('id')}'")->num_rows > 0;
 		}
+		
+		
     }else{
         echo '<script> alert("Post ID is invalid."); location.replace("./?page=user/profile");</script>';
     }
 }else{
     echo '<script> alert("Post ID is required."); location.replace("./?page=user/profile");</script>';
+}
+$qry_options = $conn->query("SELECT DISTINCT o.name FROM post_list p CROSS JOIN options_list o WHERE CONCAT(';', p.options, ';') LIKE CONCAT('%;', o.id, ';%') AND p.id = '{$id}'");
+
+$options = array(); // Initialize an array to store options data
+
+// Check if there are any options for the post
+if ($qry_options->num_rows > 0) {
+    while ($option_data = $qry_options->fetch_assoc()) {
+        $options[] = $option_data;
+    }
 }
 ?>
 <div class="mx-0 py-5 px-3 mx-ns-4 bg-gradient-light shadow blur">
@@ -53,11 +66,21 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 					</div>
 					<hr>
 					<div>
-						<div class="truncate-5 truncated-text"><?=isset($caption) ? str_replace(["\n\r","\n","\r"], "<br />", $caption) : '' ?></div>
-						<a href="javascript:void(0)" class="seemore d-none">Read More</a>
-						<a href="javascript:void(0)" class="seeless d-none">Show Less</a>
+					<!-- Diplay post's infos -->
+					<div class="truncate-5 truncated-text">
+						<?= isset($caption) ? str_replace(["\n\r", "\n", "\r"], "<br />", $caption) : '' ?>
+						<?= isset($tag) ? '<br /><strong>Tags:</strong> ' . str_replace(["\n\r", "\n", "\r"], "<br />", $tag) : '' ?>
+						<?php if (!empty($options)) : ?>
+							<br /><strong>Options:</strong>
+								<?php foreach ($options as $option) : ?>
+									<?= $option['name'] ?>
+								<?php endforeach; ?>
+						<?php endif; ?>
 					</div>
-					<!-- Hide the posts photo -->
+					<a href="javascript:void(0)" class="seemore d-none">Read More</a>
+					<a href="javascript:void(0)" class="seeless d-none">Show Less</a>
+				</div>
+
 					<div class="container-fluid bg-gradient-light" style="height: 30em !important">
 							<?php 
 							
