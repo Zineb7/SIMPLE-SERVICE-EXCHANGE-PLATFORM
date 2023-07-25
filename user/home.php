@@ -61,13 +61,17 @@
             <div>
               <div class="truncate-5 truncated-text">
 				<?= str_replace(["\n\r","\n","\r"], "<br />", $row['caption'])  ?>
-				<?= '<br /><strong>Tags:</strong> '.str_replace(["\n\r","\n","\r"], "<br />", $row['tag'])  ?>
-						<?php if (!empty($options)) : ?>
-							<br /><strong>Options:</strong>
-								<?php foreach ($options as $option) : ?>
-									<?= $option['name'] ?>
-								<?php endforeach; ?>
-						<?php endif; ?>
+				<!--TAG-->
+					<?php if (!empty($row['tag'])) : ?>
+					<br><strong>Tags:</strong><?= str_replace(["\n\r","\n","\r"], "<br />", $row['tag']) ?>
+				<?php endif; ?>
+				<!--OPTIONS-->
+				<?php if (!empty($options)) : ?>
+				<br /><strong>Options:</strong>
+				<?php foreach ($options as $option) : ?>
+				<?= $option['name'] ?>
+				<?php endforeach; ?>
+			<?php endif; ?>
 					</div>
               <a href="javascript:void(0)" class="seemore d-none">Read More</a>
               <a href="javascript:void(0)" class="seeless d-none">Show Less</a>
