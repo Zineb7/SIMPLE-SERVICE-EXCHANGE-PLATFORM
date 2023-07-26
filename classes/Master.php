@@ -207,6 +207,24 @@ Class Master extends DBConnection {
 		}
 		return json_encode($resp);
 	}
+		function update_handshake(){
+		extract($_POST);
+		if($status == 1){
+			$sql = "INSERT INTO `checkhand_list` set post_id = '{$post_id}', member_id = '{$this->settings->userdata('id')}'";
+		}else{
+			$sql = "DELETE FROM `checkhand_list` where post_id = '{$post_id}' and member_id = '{$this->settings->userdata('id')}'";
+		}
+        
+		$process = $this->conn->query($sql);
+		if($process){
+			$resp['status'] = 'success';
+			$resp['handshake'] = $this->conn->query("SELECT member_id FROM `checkhand_list` where post_id = '{$post_id}'  ")->num_rows;
+		}else{
+			$resp['status'] = 'failed';
+			$resp['error'] = $sql . $this->conn->error;
+		}
+		return json_encode($resp);
+	}
 	function save_comment(){
 		extract($_POST);
 		$sql = "INSERT INTO `comment_list` set post_id = '{$post_id}', member_id = '{$this->settings->userdata('id')}', `message` = '{$comment}'";
@@ -253,6 +271,9 @@ switch ($action) {
 	break;
 	case 'update_like':
 		echo $Master->update_like();
+	break;
+	case 'update_handshake':
+		echo $Master->update_handshake();
 	break;
 	case 'save_comment':
 		echo $Master->save_comment();

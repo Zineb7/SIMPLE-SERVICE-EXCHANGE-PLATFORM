@@ -128,8 +128,9 @@
             <span class="comment-count font-style-italic"><?= format_num($row['comments']) ?></span>
 			<!--CHECKHANDS ICON-->
 			<?php $clr_checkhand=(isset($qry_checkhand) && !! $qry_checkhand)?"text-success" :"text-info"; ?>
-			<a href="javascript:void(0)" class="text-reset text-decoration-none like_post " data-id="<?= $row['id'] ?>">	<i class="far fa-handshake fa-sm <?= $clr_checkhand; ?>"></i></a>
-			<span class="like-count font-style-italic "><?= format_num($row['checkhand']) ?></span>
+			<?php $statu_checkhand=(isset($qry_checkhand) && !! $qry_checkhand)?'false':'true'  ; ?>
+			<a href="javascript:void(0)" data-handshake='<?= $statu_checkhand; ?>' class="text-reset text-decoration-none handshake_post " data-id="<?= $row['id'] ?>">	<i class="far fa-handshake fa-sm <?= $clr_checkhand; ?>"></i></a>
+			<span class="handshake-count font-style-italic "><?= format_num($row['checkhand']) ?></span>
 			
 			<!-- Your existing HTML code here -->
 			<!-- 
@@ -259,6 +260,21 @@
 			}
 			update_like(_this.attr('data-id'),status)
 		})
+		$('.handshake_post').click(function(){
+			var _this = $(this)
+			var is_like = ($(this).attr('data-handshake') == 'true' ? true : false);
+			if(!is_like){
+			
+				_this.attr('data-handshake',true)
+				var status = 1
+			}else{
+			
+				_this.attr('data-handshake',false)
+				var status = 0
+
+			}
+			update_handshake(_this.attr('data-id'),status)
+		})
 		$('.submit-comment').click(function(){
 			var post_id = $(this).closest('.d-flex').find('.comment-field').attr('data-id')
 			post_comment(post_id)
@@ -286,6 +302,25 @@
 					alert_toast("Post Like has failed", 'error')
 				}else{
 					$(".like_post[data-id='"+post_id+"']").siblings('.like-count').text(parseFloat(resp.likes).toLocaleString('en-US'))
+				}
+			}
+		})
+	}
+	  function update_handshake(post_id, stat){
+		$.ajax({
+			url:_base_url_+"classes/Master.php?f=update_handshake",
+			method:'POST',
+			data:{post_id : post_id, status:stat},
+			dataType:'json',
+			error:err=>{
+				console.log(err)
+				alert_toast("Post handshake has failed", 'error')
+			},
+			success:function(resp){
+				if(!resp.status == 'success'){
+					alert_toast("Post handshake has failed", 'error')
+				}else{
+					$(".handshake_post[data-id='"+post_id+"']").siblings('.handshake-count').text(parseFloat(resp.handshake).toLocaleString('en-US'))
 				}
 			}
 		})
