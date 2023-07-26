@@ -98,9 +98,10 @@ button {
 			<textarea rows="3" class="form-control form-control-sm rounded-0" id="caption" name="caption" required="required"><?= isset($caption) ? $caption : '' ?></textarea>
 			<!--COINVALUE,TAGS, OPTIONS-->
 			<div class="form-group mb-3">
-				<label for="coin_value" class="control-label">Coin Value</label>
-				<input type="number" min="0" max="1000" class="form-control form-control-sm rounded-0" id="coin_value" name="coin_value" value="<?= isset($coin_value) ? $coin_value : 0 ?>" required="required">
-			</div>
+    <label for="coin_value" class="control-label">Coin Value</label>
+    <input type="number" min="0" max="1000" class="form-control form-control-sm rounded-0" id="coin_value" name="coin_value" value="<?= isset($coin_value) ? $coin_value : 0 ?>" required="required">
+</div>
+		</div>
 
 			<div class="form-group mb-3">
 				<label for="tag" class="control-label">Tags</label>
@@ -179,12 +180,27 @@ button {
 </div>
 <script>
 	$(document).ready(function(){
-		$('#post-form').submit(function(e){
-			e.preventDefault();
-            var _this = $(this)
-			 $('.err-msg').remove();
-			start_loader();
-			$.ajax({
+		$('#post-form').submit(function (e) {
+            e.preventDefault();
+            var _this = $(this);
+            $('.err-msg').remove();
+
+            // Get the default coin value
+            var defaultCoinValue = parseFloat('<?= isset($coin_value) ? $coin_value : 0 ?>');
+
+            // Get the total coin value from selected options
+            var totalCoinValue = 0;
+            const checkboxes = document.querySelectorAll('input[name^="options_list"]:checked');
+            checkboxes.forEach((checkbox) => {
+                totalCoinValue += parseFloat(checkbox.value);
+            });
+
+            // Check if the total value is less than the default value
+            if (totalCoinValue < defaultCoinValue) {
+                alert('Total coin value cannot be less than the default value.');
+                return; // Prevent form submission
+            }
+    $.ajax({
 				url:_base_url_+"classes/Master.php?f=save_post",
 				data: new FormData($(this)[0]),
                 cache: false,
@@ -280,22 +296,42 @@ button {
 	})
 	//DISPLAYED VALUES AFTER CHECKING BOXES OPTIONS
 	function updateSelectedNames(checkbox) {
-		const selectedNames = [];
-		var coinstotalmin=0;
-		const checkboxes = document.querySelectorAll('input[name^="options_list"]:checked');
-		checkboxes.forEach((checkbox) => {
-			const label = checkbox.nextElementSibling;
-			selectedNames.push(label.textContent);
-			coinstotalmin=coinstotalmin+Number(checkbox.value);
-		});
+    const selectedNames = [];
+    let coinstotalmin = 0;
+    const checkboxes = document.querySelectorAll('input[name^="options_list"]:checked');
+    checkboxes.forEach((checkbox) => {
+        const label = checkbox.nextElementSibling;
+        selectedNames.push(label.textContent);
+        coinstotalmin += Number(checkbox.value);
+    });
 
-		const multiSel = document.querySelector('.multiSel');
-		multiSel.textContent = selectedNames.join(', ');
-		
-			const coin_valuemin = document.querySelector('#coin_value');
-		coin_valuemin.value = coinstotalmin;
-		coin_valuemin.min = coinstotalmin;
-	}
+    const multiSel = document.querySelector('.multiSel');
+    multiSel.textContent = selectedNames.join(', ');
+
+    const coin_valuemin = document.querySelector('#coin_value');
+    coin_valuemin.value = coinstotalmin;
+    coin_valuemin.min = coinstotalmin; // Set the minimum value to the total sum of selected options
+}
+// Add this function to update the minimum value of the coin_value input
+function updateMinCoinValue() {
+  const selectedOptions = document.querySelectorAll('input[name^="options_list"]:checked');
+  let sumOfSelectedOptions = 0;
+  selectedOptions.forEach((option) => {
+    sumOfSelectedOptions += Number(option.value);
+  });
+
+  const coinValueInput = document.getElementById('coin_value');
+  coinValueInput.min = sumOfSelectedOptions;
+}
+
+// Call the updateMinCoinValue function when any checkbox is clicked
+document.querySelectorAll('input[name^="options_list"]').forEach((checkbox) => {
+  checkbox.addEventListener('click', updateMinCoinValue);
+});
+
+// Call the updateMinCoinValue function on page load to set the initial minimum value
+updateMinCoinValue();
+
  
 
 
@@ -335,4 +371,5 @@ button {
 	}
 
 	});
+
 </script>
