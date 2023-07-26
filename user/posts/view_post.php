@@ -138,9 +138,13 @@ if ($qry_options->num_rows > 0) {
 					<a href="javascript:void(0)" class="text-reset text-decoration-none post_comments" data-id="<?= isset($id) ? $id : '' ?>"><i class="far fa-comment"></i></a>
 					<span class="comment-count font-style-italic"><?= isset($comments) ? format_num($comments) : 0 ?></span>
 					<!--CHECKHANDS ICON-->
-					<a href="javascript:void(0)" class="text-reset text-decoration-none post_comments float-right" data-id="<?= $row['id'] ?>">
-					<i class="far fa-handshake fa-sm"></i>
-					</a>
+<a href="javascript:void(0)" class="text-reset text-decoration-none post_checkhand" data-id="<?= isset($id) ? $id : '' ?>">
+    <i class="far fa-handshake fa-sm"></i>
+</a>
+<span class="handshake-count"><?= isset($handshake_count) ? format_num($handshake_count) : 0 ?></span>
+<!-- ... -->
+<!-- End of existing HTML code -->
+			
 					<hr class="mx-n4 mb-3">
 					<div class="mx-n4">
 						<div class="list-group mb-3">
@@ -360,4 +364,20 @@ if ($qry_options->num_rows > 0) {
 			}
 		})
 	}
+	$('.post_checkhand').click(function(){
+	var _this = $(this)
+	var post_id = _this.data('id')
+	$.ajax({
+		url: _base_url_ + 'classes/Master.php?f=handshake',
+		method: 'POST',
+		data: { post_id: post_id },
+		dataType: 'json',
+		success: function(resp){
+			if(resp.status == 'success'){
+				var count = parseInt(_this.siblings('.handshake-count').text()) + 1
+				_this.siblings('.handshake-count').text(count)
+			}
+		}
+	})
+})
 </script>
