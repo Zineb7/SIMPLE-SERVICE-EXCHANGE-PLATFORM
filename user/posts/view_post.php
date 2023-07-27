@@ -190,9 +190,94 @@ if ($qry_options->num_rows > 0) {
 								<a href="javascript:void(0)" class="text-reset text-decoration-none submit-comment"><i class="fa fa-paper-plane"></i></a>
 							</div>
 						</div>
+<!-- ... Your previous code ... -->
+<hr class="mx-n2 mb-3">
+
+<div class="mx-n2 align-items-center w-100">
+    <h5>Members who clicked on handshake for this post:</h5>
+    <?php
+    // Number of rows to display per page
+    $rows_per_page = 5;
+
+    // Get the current page number from the URL, default to page 1
+    $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+    // Calculate the offset for the SQL query
+    $offset = max(0, ($current_page - 1) * $rows_per_page);
+
+    // Fetch total number of rows for pagination
+    $post_id = $id; // Replace 26 with the actual post_id for which you want to retrieve handshake members
+    $total_rows_qry = $conn->query("SELECT COUNT(*) as total FROM `checkhand_list` WHERE `post_id` = '{$post_id}'");
+    $total_rows = $total_rows_qry->fetch_assoc()['total'];
+
+    // Calculate total number of pages
+    $total_pages = ceil($total_rows / $rows_per_page);
+
+    // Fetch members who clicked on handshake for this post with pagination and ratings
+    $qry_handshake_members = $conn->query("SELECT ch.`id`, CONCAT(m.firstname, ' ', m.lastname) AS full_name, m.coin, ch.date_clicked, ch.status,
+                                                sr.rating, sr.comment
+                                          FROM `checkhand_list` ch
+                                          INNER JOIN `member_list` m ON ch.member_id = m.id
+                                          LEFT JOIN `service_ratings` sr ON ch.member_id = sr.receiver_id AND ch.post_id = sr.provider_id
+                                          WHERE ch.post_id = '{$post_id}'
+                                          LIMIT $offset, $rows_per_page");
+
+    if ($qry_handshake_members) {
+        if ($qry_handshake_members->num_rows > 0) {
+            ?>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Balance</th>
+                        <th>Request Date</th>
+                        <th>Rating</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($handshake_member = $qry_handshake_members->fetch_assoc()): ?>
+                        <tr>
+                            <td><?= $handshake_member['full_name'] ?></td>
+                            <td><?= $handshake_member['coin'] ?></td>
+                            <td><?= date("M d, Y h:i A", strtotime($handshake_member['date_clicked'])) ?></td>
+                            <td><?= $handshake_member['rating'] ?></td>
+                            <td>
+                                <?php if ($handshake_member['status'] == 0): ?>
+                                    <a href="accept_handshake.php?id=<?= $handshake_member['id'] ?>&post_id=<?= $post_id ?>" class="btn btn-success btn-sm">Accept</a>
+                                    <a href="decline_handshake.php?id=<?= $handshake_member['id'] ?>&post_id=<?= $post_id ?>" class="btn btn-danger btn-sm">Decline</a>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+
+            <!-- Pagination links (displayed only if there are more than 5 rows) -->
+            <?php if ($total_rows > $rows_per_page): ?>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <?php for ($page = 1; $page <= $total_pages; $page++): ?>
+                            <li class="page-item <?= ($page === $current_page) ? 'active' : '' ?>">
+                                <a class="page-link" href="?page=<?= $page ?>"><?= $page ?></a>
+                            </li>
+                        <?php endfor; ?>
+                    </ul>
+                </nav>
+            <?php endif; ?>
+            <?php
+        } else {
+            echo "No members have clicked on handshake for this post.";
+        }
+    } else {
+        echo "Error executing the query: " . $conn->error;
+    }
+    ?>
+</div>
 					</div>
 				</div>
 			</div>
+			
 			<div class="card-footer text-center py-1">
 				<button class="btn btn-danger bg-gradient-danger rounded-0" id="delete-data"><i class="fa fa-trash"></i> Delete Post</button>
 			</div>
