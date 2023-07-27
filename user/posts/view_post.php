@@ -194,7 +194,7 @@ if ($qry_options->num_rows > 0) {
 <hr class="mx-n2 mb-3">
 
 <div class="mx-n2 align-items-center w-100">
-    <h5>Members who clicked on handshake for this post:</h5>
+    <h6>Providers for this service:</h6>
     <?php
     // Number of rows to display per page
     $rows_per_page = 5;
