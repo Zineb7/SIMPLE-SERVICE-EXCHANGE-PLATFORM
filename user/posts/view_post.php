@@ -47,6 +47,7 @@ if ($qry_options->num_rows > 0) {
       object-fit: cover;
       object-position: center;
     }
+	
 </style>
 <div class="row justify-content-center" style="margin-top:-2em;">
 	<div class="col-lg-6 col-md-8 col-sm-11 col-xs-11">
@@ -148,8 +149,8 @@ if ($qry_options->num_rows > 0) {
 					<!--CHECKHANDS ICON-->
 					<?php $clr_checkhand=(isset($qry_checkhand) && !! $qry_checkhand)?"text-success" :"text-info"; ?>
 					<?php $statu_checkhand=(isset($qry_checkhand) && !! $qry_checkhand)?'false':'true'  ; ?>
-					<a href="javascript:void(0)" data-handshake='<?= $statu_checkhand; ?>' class="text-reset text-decoration-none handshake_post " data-id="<?= isset($id) ? $id : '' ?>">	<i class="far fa-handshake fa-sm <?= $clr_checkhand; ?>"></i></a>
-					<span class="handshake-count font-style-italic "><?= format_num($checkhand) ?></span>
+					<a href="javascript:void(0)" data-handshake='<?= $statu_checkhand; ?>' class="text-reset text-decoration-none handshake_post " data-id="<?= isset($id) ? $id : '' ?>">	<i class="far fa-handshake fa-lg <?= $clr_checkhand; ?>"></i></a>
+					<span class="handshake-count font-style-italic " style="font-size: x-large;"><?= format_num($checkhand) ?></span>
 					<hr class="mx-n4 mb-3">
 					<div class="mx-n4">
 						<div class="list-group mb-3">

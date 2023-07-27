@@ -371,5 +371,6 @@ updateMinCoinValue();
 	}
 
 	});
+	
 
 </script>
