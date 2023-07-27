@@ -489,5 +489,4 @@ if ($qry_options->num_rows > 0) {
 			}
 		})
 	}
-})
 </script>
