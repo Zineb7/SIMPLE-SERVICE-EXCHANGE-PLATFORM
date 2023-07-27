@@ -1,13 +1,20 @@
 <?php
 
 if(isset($_GET['id']) && $_GET['id'] > 0){
-    $qry = $conn->query("SELECT p.*, concat(m.firstname, ' ', coalesce(concat(m.middlename,' '),''),m.lastname) as `name`, m.avatar, COALESCE((SELECT count(member_id) FROM `like_list` where post_id = p.id),0) as `likes`, COALESCE((SELECT count(member_id) FROM `comment_list` where post_id = p.id),0) as `comments`, p.coin_value, p.tag FROM post_list p inner join `member_list` m on p.member_id = m.id where p.id = '{$_GET['id']}' and p.member_id = '{$_settings->userdata('id')}'");
+    $qry = $conn->query("SELECT p.*, concat(m.firstname, ' ', 
+	coalesce(concat(m.middlename,' '),''),m.lastname) as `name`, m.avatar, 
+	COALESCE((SELECT count(member_id) FROM `checkhand_list` WHERE post_id = p.id), 0) as `checkhand`,
+	COALESCE((SELECT count(member_id) FROM `like_list` where post_id = p.id),0) as `likes`, 
+	COALESCE((SELECT count(member_id) FROM `comment_list` where post_id = p.id),0) as `comments`, 
+	p.coin_value, p.tag FROM post_list p 
+	inner join `member_list` m on p.member_id = m.id 
+	where p.id = '{$_GET['id']}' and p.member_id = '{$_settings->userdata('id')}'");
     if($qry->num_rows > 0){
         foreach($qry->fetch_assoc() as $k => $v){
             $$k=$v;
         }
 		if(isset($id)){
-		
+			$qry_checkhand = $conn->query("SELECT post_id FROM `checkhand_list` where post_id = '{$id}' and member_id = '{$_settings->userdata('id')}'")->num_rows > 0;
 			$qry_like = $conn->query("SELECT post_id FROM `like_list` where post_id = '{$id}' and member_id = '{$_settings->userdata('id')}'")->num_rows > 0;
 		}
 		
@@ -18,6 +25,7 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 }else{
     echo '<script> alert("Post ID is required."); location.replace("./?page=user/profile");</script>';
 }
+
 $qry_options = $conn->query("SELECT DISTINCT o.name FROM post_list p CROSS JOIN options_list o WHERE CONCAT(';', p.options, ';') LIKE CONCAT('%;', o.id, ';%') AND p.id = '{$id}'");
 
 $options = array(); // Initialize an array to store options data
@@ -138,13 +146,10 @@ if ($qry_options->num_rows > 0) {
 					<a href="javascript:void(0)" class="text-reset text-decoration-none post_comments" data-id="<?= isset($id) ? $id : '' ?>"><i class="far fa-comment"></i></a>
 					<span class="comment-count font-style-italic"><?= isset($comments) ? format_num($comments) : 0 ?></span>
 					<!--CHECKHANDS ICON-->
-<a href="javascript:void(0)" class="text-reset text-decoration-none post_checkhand" data-id="<?= isset($id) ? $id : '' ?>">
-    <i class="far fa-handshake fa-sm"></i>
-</a>
-<span class="handshake-count"><?= isset($handshake_count) ? format_num($handshake_count) : 0 ?></span>
-<!-- ... -->
-<!-- End of existing HTML code -->
-			
+					<?php $clr_checkhand=(isset($qry_checkhand) && !! $qry_checkhand)?"text-success" :"text-info"; ?>
+					<?php $statu_checkhand=(isset($qry_checkhand) && !! $qry_checkhand)?'false':'true'  ; ?>
+					<a href="javascript:void(0)" data-handshake='<?= $statu_checkhand; ?>' class="text-reset text-decoration-none handshake_post " data-id="<?= isset($id) ? $id : '' ?>">	<i class="far fa-handshake fa-sm <?= $clr_checkhand; ?>"></i></a>
+					<span class="handshake-count font-style-italic "><?= format_num($checkhand) ?></span>
 					<hr class="mx-n4 mb-3">
 					<div class="mx-n4">
 						<div class="list-group mb-3">
@@ -264,6 +269,21 @@ if ($qry_options->num_rows > 0) {
 			}
 			update_like(_this.attr('data-id'),status)
 		})
+		$('.handshake_post').click(function(){
+			var _this = $(this)
+			var is_like = ($(this).attr('data-handshake') == 'true' ? true : false);
+			if(!is_like){
+			
+				_this.attr('data-handshake',true)
+				var status = 1
+			}else{
+			
+				_this.attr('data-handshake',false)
+				var status = 0
+
+			}
+			update_handshake(_this.attr('data-id'),status)
+		})
 		$('.submit-comment').click(function(){
 			var post_id = $(this).closest('.d-flex').find('.comment-field').attr('data-id')
 			post_comment(post_id)
@@ -364,20 +384,24 @@ if ($qry_options->num_rows > 0) {
 			}
 		})
 	}
-	$('.post_checkhand').click(function(){
-	var _this = $(this)
-	var post_id = _this.data('id')
-	$.ajax({
-		url: _base_url_ + 'classes/Master.php?f=handshake',
-		method: 'POST',
-		data: { post_id: post_id },
-		dataType: 'json',
-		success: function(resp){
-			if(resp.status == 'success'){
-				var count = parseInt(_this.siblings('.handshake-count').text()) + 1
-				_this.siblings('.handshake-count').text(count)
+	function update_handshake(post_id, stat){
+		$.ajax({
+			url:_base_url_+"classes/Master.php?f=update_handshake",
+			method:'POST',
+			data:{post_id : post_id, status:stat},
+			dataType:'json',
+			error:err=>{
+				console.log(err)
+				alert_toast("Post handshake has failed", 'error')
+			},
+			success:function(resp){
+				if(!resp.status == 'success'){
+					alert_toast("Post handshake has failed", 'error')
+				}else{
+					$(".handshake_post[data-id='"+post_id+"']").siblings('.handshake-count').text(parseFloat(resp.handshake).toLocaleString('en-US'))
+				}
 			}
-		}
-	})
+		})
+	}
 })
 </script>
