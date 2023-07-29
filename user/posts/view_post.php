@@ -148,7 +148,7 @@ if ($qry_options->num_rows > 0) {
 					<span class="comment-count font-style-italic"><?= isset($comments) ? format_num($comments) : 0 ?></span>
 					<!--CHECKHANDS ICON-->
 					<?php $clr_checkhand=(isset($qry_checkhand) && !! $qry_checkhand)?"text-success" :"text-info"; ?>
-					<?php $statu_checkhand=(isset($qry_checkhand) && !! $qry_checkhand)?'false':'true'  ; ?>
+					<?php $statu_checkhand=(isset($qry_checkhand) && !! $qry_checkhand)?'true':'false'  ; ?>
 					<a href="javascript:void(0)" data-handshake='<?= $statu_checkhand; ?>' class="text-reset text-decoration-none handshake_post " data-id="<?= isset($id) ? $id : '' ?>">	<i class="far fa-handshake fa-lg <?= $clr_checkhand; ?>"></i></a>
 					<span class="handshake-count font-style-italic " style="font-size: x-large;"><?= format_num($checkhand) ?></span>
 					<hr class="mx-n4 mb-3">
