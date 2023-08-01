@@ -9,13 +9,16 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 	p.coin_value, p.tag FROM post_list p 
 	inner join `member_list` m on p.member_id = m.id 
 	where p.id = '{$_GET['id']}' and p.member_id = '{$_settings->userdata('id')}'");
-    if($qry->num_rows > 0){
+    
+	if($qry->num_rows > 0){
         foreach($qry->fetch_assoc() as $k => $v){
             $$k=$v;
         }
 		if(isset($id)){
 			$qry_checkhand = $conn->query("SELECT post_id FROM `checkhand_list` where post_id = '{$id}' and member_id = '{$_settings->userdata('id')}'")->num_rows > 0;
 			$qry_like = $conn->query("SELECT post_id FROM `like_list` where post_id = '{$id}' and member_id = '{$_settings->userdata('id')}'")->num_rows > 0;
+		
+			//tester 
 		}
 		
 		
@@ -75,6 +78,7 @@ if ($qry_options->num_rows > 0) {
 					</div>
 					<hr>
 					<div>
+
 					<!-- Diplay post's infos -->
 					<div class="truncate-5 truncated-text">
 						<?= isset($caption) ? str_replace(["\n\r", "\n", "\r"], "<br />", $caption) : '' ?>
@@ -148,7 +152,7 @@ if ($qry_options->num_rows > 0) {
 					<span class="comment-count font-style-italic"><?= isset($comments) ? format_num($comments) : 0 ?></span>
 					<!--CHECKHANDS ICON-->
 					<?php $clr_checkhand=(isset($qry_checkhand) && !! $qry_checkhand)?"text-success" :"text-info"; ?>
-					<?php $statu_checkhand=(isset($qry_checkhand) && !! $qry_checkhand)?'true':'false'  ; ?>
+					<?php $statu_checkhand=(isset($qry_checkhand) && !! $qry_checkhand)?'false':'true'  ; ?>
 					<a href="javascript:void(0)" data-handshake='<?= $statu_checkhand; ?>' class="text-reset text-decoration-none handshake_post " data-id="<?= isset($id) ? $id : '' ?>">	<i class="far fa-handshake fa-lg <?= $clr_checkhand; ?>"></i></a>
 					<span class="handshake-count font-style-italic " style="font-size: x-large;"><?= format_num($checkhand) ?></span>
 					<hr class="mx-n4 mb-3">
@@ -225,33 +229,70 @@ if ($qry_options->num_rows > 0) {
     if ($qry_handshake_members) {
         if ($qry_handshake_members->num_rows > 0) {
             ?>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Balance</th>
-                        <th>Request Date</th>
-                        <th>Rating</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while ($handshake_member = $qry_handshake_members->fetch_assoc()): ?>
-                        <tr>
-                            <td><?= $handshake_member['full_name'] ?></td>
-                            <td><?= $handshake_member['coin'] ?></td>
-                            <td><?= date("M d, Y h:i A", strtotime($handshake_member['date_clicked'])) ?></td>
-                            <td><?= $handshake_member['rating'] ?></td>
-                            <td>
-                                <?php if ($handshake_member['status'] == 0): ?>
-                                    <a href="accept_handshake.php?id=<?= $handshake_member['id'] ?>&post_id=<?= $post_id ?>" class="btn btn-success btn-sm">Accept</a>
-                                    <a href="decline_handshake.php?id=<?= $handshake_member['id'] ?>&post_id=<?= $post_id ?>" class="btn btn-danger btn-sm">Decline</a>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Balance</th>
+            <th>Request Date</th>
+            <th>Rating</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php while ($handshake_member = $qry_handshake_members->fetch_assoc()): ?>
+            <tr>
+                <td><?= $handshake_member['full_name'] ?></td>
+                <td><?= $handshake_member['coin'] ?></td>
+                <td><?= date("M d, Y h:i A", strtotime($handshake_member['date_clicked'])) ?></td>
+                <td><?= $handshake_member['rating'] ?></td>
+                <td>
+                    <?php if ($handshake_member['status'] == 0): ?>
+                        <!-- Accept handshake form -->
+                        <form method="post">
+                            <!-- Hidden input fields to pass handshakeId and postId -->
+                            <input type="hidden" name="handshakeId" value="<?= $handshake_member['id'] ?>">
+                            <input type="hidden" name="postId" value="<?= $post_id ?>">
+                            <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                        </form>
+                        <!-- End of accept handshake form -->
+
+                        <a href="decline_handshake.php?id=<?= $handshake_member['id'] ?>&post_id=<?= $post_id ?>" class="btn btn-danger btn-sm">Decline</a>
+                    <?php endif; ?>
+                </td>
+            </tr>
+        <?php endwhile; ?>
+    </tbody>
+</table>
+<?php
+// Check if the form is submitted using POST method
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Check if the required POST parameters (handshakeId and postId) are present
+    if (isset($_POST['handshakeId']) && isset($_POST['postId'])) {
+        // Include your database connection file here
+
+        // Get the handshakeId and postId from the POST data
+        $handshakeId = $_POST['handshakeId'];
+        $postId = $_POST['postId'];
+        $status = 1; // Set the status to 1 (accepted)
+
+        // Perform the database update
+        $update_query = $conn->query("UPDATE checkhand_list SET status = '{$status}', slected= '{$status}' WHERE id = '{$handshakeId}' AND post_id = '{$postId}'");
+
+        if ($update_query) {
+            $updatedCheckhandId = $handshakeId;
+            echo "Handshake accepted successfully! Post ID: {$postId}, Checkhand List ID: {$updatedCheckhandId}";
+        } else {
+            echo "Error updating handshake status.";
+        }
+    } else {
+        // If the required POST parameters are not present, handle the error
+        echo "Invalid request. Missing handshakeId or postId.";
+    }
+}
+?>
+
+
 
             <!-- Pagination links (displayed only if there are more than 5 rows) -->
             <?php if ($total_rows > $rows_per_page): ?>
@@ -272,6 +313,7 @@ if ($qry_options->num_rows > 0) {
     } else {
         echo "Error executing the query: " . $conn->error;
     }
+	
     ?>
 </div>
 					</div>
@@ -286,6 +328,17 @@ if ($qry_options->num_rows > 0) {
 </div>
 <script>
 	$(document).ready(function(){
+		$('.accept-handshake-btn').click(function() {
+            var handshakeId = $(this).data('id');
+        var postId = $(this).data('post-id');
+
+        // Display the post ID and handshake ID in the success modal
+        $('#postID').text(postId);
+        $('#handshakeID').text(handshakeId);
+		$('#successModal').modal('show');
+
+        });
+		
         $('#delete-data').click(function(){
 			_conf("Are you sure to delete this post permanently?","delete_post",['<?= isset($id) ? $id : '' ?>'])
 		})
@@ -381,7 +434,8 @@ if ($qry_options->num_rows > 0) {
 				post_comment(post_id)
 			}
 		})
-	})
+		
+	});
 	function update_like(post_id, status){
 		$.ajax({
 			url:_base_url_+"classes/Master.php?f=update_like",
@@ -488,5 +542,8 @@ if ($qry_options->num_rows > 0) {
 				}
 			}
 		})
+
 	}
+	
+
 </script>

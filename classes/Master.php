@@ -35,6 +35,7 @@ Class Master extends DBConnection {
 		}
 		return json_encode($resp);
 	}
+	
 	function save_post(){
 		if(empty($_POST['id'])){
 			$_POST['member_id'] = $this->settings->userdata('id');
@@ -72,6 +73,31 @@ Class Master extends DBConnection {
 				}
 			}
 		}
+		// Get the default coin value
+		$defaultCoinValue = isset($coin_value) ? (float)$coin_value : 0;
+
+		/*
+		// Get the total coin value from selected options
+		$totalCoinValue = 0;
+		$checkboxes = $_POST['options_list'] ?? array();
+		foreach ($checkboxes as $checkboxValue) {
+			$checkboxValue = (float)$checkboxValue;
+			if ($checkboxValue > 0) {
+				$totalCoinValue += $checkboxValue;
+			}
+		}
+	
+		// Debugging: Output the default and total coin values to check their values
+		error_log("Default Coin Value: " . $defaultCoinValue);
+		error_log("Total Coin Value: " . $totalCoinValue);
+	
+		// Check if the total value is less than the default value
+		if ($totalCoinValue < $defaultCoinValue) {
+			$resp['status'] = 'failed';
+			$resp['msg'] = 'Total coin value cannot be less than the default value.';
+			return json_encode($resp);
+		}
+		*/
 		$data .= ", `options`='{$optionslist}' ";
  
 		if(empty($id)){
@@ -80,6 +106,7 @@ Class Master extends DBConnection {
 			$sql = "UPDATE `post_list` set {$data} where id = '{$id}' ";
 		}
 			$save = $this->conn->query($sql);
+
 		if($save){
 			$aid = !empty($id) ? $id : $this->conn->insert_id;
 			$resp['status'] = 'success';
