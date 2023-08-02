@@ -302,18 +302,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Update the post owner's coin balance
             $update_post_owner_qry = $conn->query("UPDATE member_list SET coin = '{$updated_post_owner_coin}' WHERE id = (SELECT member_id FROM post_list WHERE id = '{$postId}')");
-			$updated_member_coin = $updated_post_owner_coin; // Use the updated coin value after performing the deduction
-			$member_id = $_settings->userdata('id'); // Replace with the appropriate method to get the current logged-in member's ID
-
-			// Update the member's coin balance
-			$update_member_qry = $conn->query("UPDATE member_list SET coin = '{$updated_member_coin}' WHERE id = '{$member_id}'");
-
+			
             if ($update_query && $update_query1 && $update_post_owner_qry) {
                 $qry_accepted_handshake = $conn->query("SELECT member_id FROM checkhand_list WHERE id = '{$handshakeId}'")->fetch_assoc();
                 $acceptedMemberId = $qry_accepted_handshake['member_id'];
 
                 $updatedCheckhandId = $handshakeId;
-                echo "Request accepted successfully!! Post ID: {$postId}, Checkhand List ID: {$updatedCheckhandId}, Accepted Member ID: {$acceptedMemberId}";
+                $updated_member_coin = $updated_post_owner_coin; // Use the updated coin value after performing the deduction
+				$member_id = $_settings->userdata('id'); // Replace with the appropriate method to get the current logged-in member's ID
+
+				// Update the member's coin balance
+				$update_member_qry = $conn->query("UPDATE member_list SET coin = '{$updated_member_coin}' WHERE id = '{$member_id}'");
+
+				
+				echo "Request accepted successfully!! Post ID: {$postId}, Checkhand List ID: {$updatedCheckhandId}, Accepted Member ID: {$acceptedMemberId}";
             } else {
                 echo "Error updating handshake status or deducting coins.";
             }
