@@ -274,14 +274,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Get the handshakeId and postId from the POST data
         $handshakeId = $_POST['handshakeId'];
         $postId = $_POST['postId'];
-        $status = 1; // Set the status to 1 (accepted)
+        
+        // Fetch the member_id of the accepted handshake
+        $qry_accepted_handshake = $conn->query("SELECT member_id FROM checkhand_list WHERE id = '{$handshakeId}'")->fetch_assoc();
+        $acceptedMemberId = $qry_accepted_handshake['member_id'];
 
         // Perform the database update
-        $update_query = $conn->query("UPDATE checkhand_list SET status = '{$status}', slected= '{$status}' WHERE id = '{$handshakeId}' AND post_id = '{$postId}'");
+        $update_query = $conn->query("UPDATE checkhand_list SET status = '1', slected = '{$acceptedMemberId}' WHERE id = '{$handshakeId}' AND post_id = '{$postId}'");
+        $update_query1 = $conn->query("UPDATE post_list SET status = '1' WHERE id = '{$postId}'");
 
-        if ($update_query) {
+        if ($update_query && $update_query1) {
             $updatedCheckhandId = $handshakeId;
-            echo "Handshake accepted successfully! Post ID: {$postId}, Checkhand List ID: {$updatedCheckhandId}";
+            echo "Request accepted successfully!! Post ID: {$postId}, Checkhand List ID: {$updatedCheckhandId}, Accepted Member ID: {$acceptedMemberId}";
         } else {
             echo "Error updating handshake status.";
         }
@@ -290,6 +294,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "Invalid request. Missing handshakeId or postId.";
     }
 }
+
 ?>
 
 
