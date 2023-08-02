@@ -2,7 +2,7 @@
 
 if(isset($_GET['id']) && $_GET['id'] > 0){
     $qry = $conn->query("SELECT p.*, concat(m.firstname, ' ', 
-	coalesce(concat(m.middlename,' '),''),m.lastname) as `name`, m.avatar, 
+	coalesce(concat(m.middlename,' '),''),m.lastname) as `name`, m.avatar, m.coin,
 	COALESCE((SELECT count(member_id) FROM `checkhand_list` WHERE post_id = p.id), 0) as `checkhand`,
 	COALESCE((SELECT count(member_id) FROM `like_list` where post_id = p.id),0) as `likes`, 
 	COALESCE((SELECT count(member_id) FROM `comment_list` where post_id = p.id),0) as `comments`, 
@@ -246,20 +246,27 @@ if ($qry_options->num_rows > 0) {
                 <td><?= $handshake_member['coin'] ?></td>
                 <td><?= date("M d, Y h:i A", strtotime($handshake_member['date_clicked'])) ?></td>
                 <td><?= $handshake_member['rating'] ?></td>
-                <td>
-                    <?php if ($handshake_member['status'] == 0): ?>
-                        <!-- Accept handshake form -->
-                        <form method="post">
-                            <!-- Hidden input fields to pass handshakeId and postId -->
-                            <input type="hidden" name="handshakeId" value="<?= $handshake_member['id'] ?>">
-                            <input type="hidden" name="postId" value="<?= $post_id ?>">
-                            <button type="submit" class="btn btn-success btn-sm">Accept</button>
-                        </form>
-                        <!-- End of accept handshake form -->
+                       <td>
+            <?php if ($handshake_member['status'] == 0): ?>
+                <!-- Accept handshake form -->
+                <form method="post">
+                    <!-- Hidden input fields to pass handshakeId and postId -->
+                    <input type="hidden" name="handshakeId" value="<?= $handshake_member['id'] ?>">
+                    <input type="hidden" name="postId" value="<?= $post_id ?>">
+                    <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                </form>
+                <!-- End of accept handshake form -->
 
-                        <a href="decline_handshake.php?id=<?= $handshake_member['id'] ?>&post_id=<?= $post_id ?>" class="btn btn-danger btn-sm">Decline</a>
-                    <?php endif; ?>
-                </td>
+                <a href="decline_handshake.php?id=<?= $handshake_member['id'] ?>&post_id=<?= $post_id ?>" class="btn btn-danger btn-sm">Decline</a>
+            <?php else: ?>
+                <?php if ($handshake_member['status'] == 1): ?>
+                    <button class="btn btn-info btn-sm">Accepted</button>
+                <?php else: ?>
+                    <button class="btn btn-secondary btn-sm">Not Available</button>
+                <?php endif; ?>
+            <?php endif; ?>
+        </td>
+
             </tr>
         <?php endwhile; ?>
     </tbody>
@@ -274,30 +281,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Get the handshakeId and postId from the POST data
         $handshakeId = $_POST['handshakeId'];
         $postId = $_POST['postId'];
-        
-        // Fetch the member_id of the accepted handshake
-        $qry_accepted_handshake = $conn->query("SELECT member_id FROM checkhand_list WHERE id = '{$handshakeId}'")->fetch_assoc();
-        $acceptedMemberId = $qry_accepted_handshake['member_id'];
+        $status = 1; // Set the status to 1 (accepted)
 
-        // Perform the database update
-        $update_query = $conn->query("UPDATE checkhand_list SET status = '1', slected = '{$acceptedMemberId}' WHERE id = '{$handshakeId}' AND post_id = '{$postId}'");
-        $update_query1 = $conn->query("UPDATE post_list SET status = '1' WHERE id = '{$postId}'");
+        // Fetch the coin balance of the post owner
+        $post_owner_qry = $conn->query("SELECT coin FROM member_list WHERE id = (SELECT member_id FROM post_list WHERE id = '{$postId}')");
+        $post_owner_coin = $post_owner_qry->fetch_assoc()['coin'];
 
-        if ($update_query && $update_query1) {
-            $updatedCheckhandId = $handshakeId;
-            echo "Request accepted successfully!! Post ID: {$postId}, Checkhand List ID: {$updatedCheckhandId}, Accepted Member ID: {$acceptedMemberId}";
+        // Fetch the required coins for this handshake
+        $required_coins_qry = $conn->query("SELECT coin_value FROM post_list WHERE id = '{$postId}'");
+        $required_coins = $required_coins_qry->fetch_assoc()['coin_value'];
+
+        // Check if the post owner has enough coins
+        if ($post_owner_coin >= $required_coins) {
+            // Deduct coins from post owner's balance
+            $updated_post_owner_coin = $post_owner_coin - $required_coins;
+
+            // Perform the database update
+            $update_query = $conn->query("UPDATE checkhand_list SET status = '{$status}', slected = '{$status}' WHERE id = '{$handshakeId}' AND post_id = '{$postId}'");
+            $update_query1 = $conn->query("UPDATE post_list SET status = '{$status}' WHERE id = '{$postId}'");
+
+            // Update the post owner's coin balance
+            $update_post_owner_qry = $conn->query("UPDATE member_list SET coin = '{$updated_post_owner_coin}' WHERE id = (SELECT member_id FROM post_list WHERE id = '{$postId}')");
+			$updated_member_coin = $updated_post_owner_coin; // Use the updated coin value after performing the deduction
+			$member_id = $_settings->userdata('id'); // Replace with the appropriate method to get the current logged-in member's ID
+
+			// Update the member's coin balance
+			$update_member_qry = $conn->query("UPDATE member_list SET coin = '{$updated_member_coin}' WHERE id = '{$member_id}'");
+
+            if ($update_query && $update_query1 && $update_post_owner_qry) {
+                $qry_accepted_handshake = $conn->query("SELECT member_id FROM checkhand_list WHERE id = '{$handshakeId}'")->fetch_assoc();
+                $acceptedMemberId = $qry_accepted_handshake['member_id'];
+
+                $updatedCheckhandId = $handshakeId;
+                echo "Request accepted successfully!! Post ID: {$postId}, Checkhand List ID: {$updatedCheckhandId}, Accepted Member ID: {$acceptedMemberId}";
+            } else {
+                echo "Error updating handshake status or deducting coins.";
+            }
         } else {
-            echo "Error updating handshake status.";
+            echo "Error: Not enough coins in the post owner's balance.";
         }
     } else {
         // If the required POST parameters are not present, handle the error
         echo "Invalid request. Missing handshakeId or postId.";
     }
 }
-
 ?>
-
-
 
             <!-- Pagination links (displayed only if there are more than 5 rows) -->
             <?php if ($total_rows > $rows_per_page): ?>

@@ -13,7 +13,7 @@
       <?php 
 		$qry = $conn->query("SELECT p.*, 
 		concat(m.firstname, ' ', coalesce(concat(m.middlename,' '),''), m.lastname) as `name`, 
-		m.avatar, 
+		m.avatar, m.coin,
 		COALESCE((SELECT count(member_id) FROM `like_list` WHERE post_id = p.id), 0) as `likes`,
         COALESCE((SELECT count(member_id) FROM `checkhand_list` WHERE post_id = p.id), 0) as `checkhand`,		
 		COALESCE((SELECT count(member_id) FROM `comment_list` WHERE post_id = p.id), 0) as `comments`, 

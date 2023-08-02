@@ -36,7 +36,16 @@
                           <div class="dropdown-divider"></div>
                           <a class="dropdown-item" href="<?php echo base_url.'/classes/Login.php?f=user_logout' ?>"><span class="fas fa-sign-out-alt"></span> Logout</a>
                         </div>
-                        <span class="ml-2 font-weight-bold">Balance <?php echo ucwords($_settings->userdata('coin')); ?> </span> <!-- Display the coins -->
+                        <?php
+                        $member_id = $_settings->userdata('id');
+
+                        // Fetch the coin balance from the database using the member's ID
+                        $qry_coin_balance = $conn->query("SELECT coin FROM member_list WHERE id = '{$member_id}'");
+                        $coin_balance = $qry_coin_balance->fetch_assoc()['coin'];
+                        ?>
+
+                        <!-- Display the coins -->
+                        <span class="ml-2 font-weight-bold">Balance <?php echo ucwords($coin_balance); ?> </span>
 
                     </div>
                     </div>
