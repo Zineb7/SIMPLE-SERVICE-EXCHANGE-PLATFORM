@@ -20,6 +20,7 @@
                         <li class="nav-item"><a class="nav-link" aria-current="page" href="./">Home</a></li>
                         <li class="nav-item"><a class="nav-link" id="upload-modal" aria-current="page" href="javascript:void(0)"><i class="far fa-plus-square mr-2"></i>Upload</a></li>
                         <li class="nav-item"><a class="nav-link" aria-current="page" href="./?page=user/profile">Profile</a></li>
+                        <li class="nav-item"><a class="nav-link" aria-current="page" href="./?page=user/services">My Services</a></li>
                     </ul>
                     <div class="d-flex align-items-center">
                       <div class="btn-group nav-link text-reset">

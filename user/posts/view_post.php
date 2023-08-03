@@ -314,6 +314,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				// Update the member's coin balance
 				$update_member_qry = $conn->query("UPDATE member_list SET coin = '{$updated_member_coin}' WHERE id = '{$member_id}'");
 
+				//Insert new query in CoinList
+				
 				
 				echo "Request accepted successfully!! Post ID: {$postId}, Checkhand List ID: {$updatedCheckhandId}, Accepted Member ID: {$acceptedMemberId}";
             } else {
