@@ -249,11 +249,11 @@ if ($qry_options->num_rows > 0) {
                        <td>
             <?php if ($handshake_member['status'] == 0): ?>
                 <!-- Accept handshake form -->
-                <form method="post">
+                <form method="post" >
                     <!-- Hidden input fields to pass handshakeId and postId -->
                     <input type="hidden" name="handshakeId" value="<?= $handshake_member['id'] ?>">
                     <input type="hidden" name="postId" value="<?= $post_id ?>">
-                    <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                    <button type="submit" class="btn btn-success btn-sm acceptButton">Accept</button>
                 </form>
                 <!-- End of accept handshake form -->
 
@@ -313,11 +313,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 				// Update the member's coin balance
 				$update_member_qry = $conn->query("UPDATE member_list SET coin = '{$updated_member_coin}' WHERE id = '{$member_id}'");
+				// After successful coin update, perform the redirection
+				
+				// Insert new row in CoinList
+				$coins_exchanged = $required_coins;
+				$date_created = date('Y-m-d H:i:s');
+				$date_updated = date('Y-m-d H:i:s');
+				$deadline = date('Y-m-d H:i:s');
+				$status = '1';
 
 				//Insert new query in CoinList
+				$insert_coin_list_qry = $conn->query("INSERT INTO coin_list (sender_id, receiver_id, post_id, coins_exchanged, date_created, date_updated, deadline, status) 
+                                         VALUES ('{$_settings->userdata('id')}', '{$acceptedMemberId}', '{$postId}', '{$coins_exchanged}', 
+                                                 '{$date_created}', '{$date_updated}', '{$deadline}', '{$status}')");
+
 				
 				
 				echo "Request accepted successfully!! Post ID: {$postId}, Checkhand List ID: {$updatedCheckhandId}, Accepted Member ID: {$acceptedMemberId}";
+				//header("Location: user/home.php");
+
             } else {
                 echo "Error updating handshake status or deducting coins.";
             }
