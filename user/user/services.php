@@ -37,22 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Assuming you have the necessary data to insert into the coin_list table.
         $senderId = $_settings->userdata('id'); // The sender is the connected member (the one currently logged in).
+        $receiverId = getOwnerMemberId($postId); // Get the owner's member ID using the function.
+
 
         // Check if the coin_list entry already exists for the given postId
-        $check_existing_qry = $conn->query("SELECT * FROM coin_list WHERE post_id = '{$postId}' LIMIT 1");
-        if ($check_existing_qry->num_rows == 0) {
-            // If the coin_list entry does not exist, insert the new row into the coin_list table.
-            $qry = $conn->query("SELECT p.*, c.slected, c.status, c.date_clicked, m.firstname, m.lastname, m.id as receiver_id
-            FROM post_list p 
-            INNER JOIN checkhand_list c ON p.id = c.post_id
-            INNER JOIN member_list m ON p.member_id = m.id
-            WHERE c.member_id = '{$_settings->userdata('id')}'   
-            ORDER BY unix_timestamp(p.date_updated) DESC");
-
-            // Move the PHP form submission handling inside the while loop
-            while ($row = $qry->fetch_assoc()) {
-                if (isset($_POST['postId']) && $_POST['postId'] == $row['id']) {
-                    $receiverId = $row['receiver_id']; // Move this line inside the while loop to get the receiver ID from the current row.
+       
                     $insert_coin_list_qry = $conn->query("INSERT INTO coin_list (sender_id, receiver_id, post_id, coins_exchanged, date_created, date_updated, deadline, status) 
                                              VALUES ('{$senderId}', '{$receiverId}', '{$postId}', '{$coinsExchanged}', 
                                                      '{$dateNow}', '{$dateNow}', '{$dateNow}', '2')");
@@ -63,14 +52,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } else {
                         // Insert failed, handle the error (e.g., display an error message).
                     }
-                    break; // Exit the loop after insertion to avoid multiple inserts.
-                }
-            }
-        }
+                    echo '<script>window.location.href = window.location.href;</script>';
+                    exit; 
+    }
 
-        // After processing the form submission, you don't need to redirect or reload the page.
-        // No header() or JavaScript redirection is needed.
-        // ...
     } elseif (isset($_POST['cancelService'])) {
         $postId = $_POST['postId'];
                 // Get the coin_value for the post from the database
@@ -123,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo '<script>window.location.href = window.location.href;</script>';
         exit; 
     }
-}
+
 ?>
 
 
