@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             FROM post_list p 
             INNER JOIN checkhand_list c ON p.id = c.post_id
             INNER JOIN member_list m ON p.member_id = m.id
-            WHERE c.slected = '{$_settings->userdata('id')}'
+            WHERE c.member_id = '{$_settings->userdata('id')}'   
             ORDER BY unix_timestamp(p.date_updated) DESC");
 
             // Move the PHP form submission handling inside the while loop
@@ -209,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $service_requests_qry = $conn->query("SELECT p.*, c.slected, c.status, c.date_clicked, m.firstname, m.lastname FROM post_list p 
                 INNER JOIN checkhand_list c ON p.id = c.post_id
                 INNER JOIN member_list m ON p.member_id = m.id
-                WHERE c.slected = '{$_settings->userdata('id')}' AND c.status = 1
+                WHERE c.member_id = '{$_settings->userdata('id')}' AND c.status = 1
                 ORDER BY unix_timestamp(p.date_updated) DESC");
 
             // Create a flag to check if any records are displayed
