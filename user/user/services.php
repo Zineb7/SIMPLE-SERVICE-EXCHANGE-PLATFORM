@@ -1,9 +1,132 @@
 <?php
+// ... Your existing code for database connection and other functions ...
+
 $user = $conn->query("SELECT *, concat(firstname, ' ', coalesce(concat(middlename, ' '), ''), lastname) as `name` FROM member_list WHERE id = '".$_settings->userdata('id')."'");
 foreach ($user->fetch_assoc() as $k => $v) {
     $$k = $v;
 }
+// Function to get the owner's member ID based on the post ID
+function getOwnerMemberId($postId) {
+    global $conn; // Assuming you have the database connection available in this scope.
+
+    $qry = $conn->query("SELECT member_id FROM post_list WHERE id = '{$postId}'");
+    if ($qry->num_rows > 0) {
+        $row = $qry->fetch_assoc();
+        return $row['member_id'];
+    }
+
+    return null; // Return null or an appropriate value if the post ID is not found.
+}
+
+
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['finishService'])) {
+        $postId = $_POST['postId'];
+        $get_coin_value_qry = $conn->query("SELECT coin_value FROM post_list WHERE id = '{$postId}' LIMIT 1");
+        if ($get_coin_value_qry->num_rows > 0) {
+            $row = $get_coin_value_qry->fetch_assoc();
+            $coinsExchanged = $row['coin_value'];
+        } else {
+            // Handle the case when the post ID does not exist or other errors.
+            // You can add an appropriate error handling here.
+            exit;
+        }
+        $dateNow = date("Y-m-d H:i:s"); // Current date and time.
+        
+        // Assuming you have the necessary data to insert into the coin_list table.
+        $senderId = $_settings->userdata('id'); // The sender is the connected member (the one currently logged in).
+
+        // Check if the coin_list entry already exists for the given postId
+        $check_existing_qry = $conn->query("SELECT * FROM coin_list WHERE post_id = '{$postId}' LIMIT 1");
+        if ($check_existing_qry->num_rows == 0) {
+            // If the coin_list entry does not exist, insert the new row into the coin_list table.
+            $qry = $conn->query("SELECT p.*, c.slected, c.status, c.date_clicked, m.firstname, m.lastname, m.id as receiver_id
+            FROM post_list p 
+            INNER JOIN checkhand_list c ON p.id = c.post_id
+            INNER JOIN member_list m ON p.member_id = m.id
+            WHERE c.slected = '{$_settings->userdata('id')}'
+            ORDER BY unix_timestamp(p.date_updated) DESC");
+
+            // Move the PHP form submission handling inside the while loop
+            while ($row = $qry->fetch_assoc()) {
+                if (isset($_POST['postId']) && $_POST['postId'] == $row['id']) {
+                    $receiverId = $row['receiver_id']; // Move this line inside the while loop to get the receiver ID from the current row.
+                    $insert_coin_list_qry = $conn->query("INSERT INTO coin_list (sender_id, receiver_id, post_id, coins_exchanged, date_created, date_updated, deadline, status) 
+                                             VALUES ('{$senderId}', '{$receiverId}', '{$postId}', '{$coinsExchanged}', 
+                                                     '{$dateNow}', '{$dateNow}', '{$dateNow}', '2')");
+
+                    if ($insert_coin_list_qry) {
+                        // Insert successful, disable the "Finish Service" button after insertion.
+                        echo "<script>document.getElementById('btn_finish_{$postId}').setAttribute('disabled', true);</script>";
+                    } else {
+                        // Insert failed, handle the error (e.g., display an error message).
+                    }
+                    break; // Exit the loop after insertion to avoid multiple inserts.
+                }
+            }
+        }
+
+        // After processing the form submission, you don't need to redirect or reload the page.
+        // No header() or JavaScript redirection is needed.
+        // ...
+    } elseif (isset($_POST['cancelService'])) {
+        $postId = $_POST['postId'];
+                // Get the coin_value for the post from the database
+        $get_coin_value_qry = $conn->query("SELECT coin_value FROM post_list WHERE id = '{$postId}' LIMIT 1");
+        if ($get_coin_value_qry->num_rows > 0) {
+            $row = $get_coin_value_qry->fetch_assoc();
+            $coinsExchanged = $row['coin_value'];
+        } else {
+            // Handle the case when the post ID does not exist or other errors.
+            // You can add an appropriate error handling here.
+            exit;
+        }
+
+
+        // Insert a new row in the coin_list table with status=7
+        $senderId = $_settings->userdata('id'); // The sender is the connected member (the one currently logged in).
+        $dateNow = date("Y-m-d H:i:s"); // Current date and time.
+
+        // Assuming you have the necessary data to insert into the coin_list table.
+        $receiverId = getOwnerMemberId($postId); // Get the owner's member ID using the function.
+
+        if ($receiverId !== null) {
+            // Insert the new row in the coin_list table
+            $insert_coin_list_qry = $conn->query("INSERT INTO coin_list (sender_id, receiver_id, post_id, coins_exchanged, date_created, date_updated, deadline, status) 
+                                                 VALUES ('{$senderId}', '{$receiverId}', '{$postId}', '{$coinsExchanged}', 
+                                                         '{$dateNow}', '{$dateNow}', '{$dateNow}', '7')");
+
+            if ($insert_coin_list_qry) {
+                // Insert successful, update the member's balance and the owner's balance.
+                $update_sender_balance_qry = $conn->query("UPDATE member_list 
+                                                           SET coin = coin - ({$coinsExchanged} * 0.25) 
+                                                           WHERE id = '{$senderId}'");
+
+                $update_receiver_balance_qry = $conn->query("UPDATE member_list 
+                                                             SET coin = coin + ({$coinsExchanged} * 0.25) 
+                                                             WHERE id = '{$receiverId}'");
+
+                if ($update_sender_balance_qry && $update_receiver_balance_qry) {
+                    // Balances updated successfully.
+                    // You can add a success message here if needed.
+                } else {
+                    // Update failed, handle the error (e.g., display an error message).
+                }
+            } else {
+                // Insert failed, handle the error (e.g., display an error message).
+            }
+        } else {
+            // Handle the case when the post ID does not exist or there is no owner.
+        }
+        echo '<script>window.location.href = window.location.href;</script>';
+        exit; 
+    }
+}
 ?>
+
+
 
 <style>
     #profile-avatar{
@@ -37,7 +160,16 @@ foreach ($user->fetch_assoc() as $k => $v) {
     }
     .btn-action {
     width: 120px; 
+
 }
+.btn-action[disabled] {
+        /* Add your preferred styles for the disabled button here */
+        background-color: #ccc; /* Set the background color to gray */
+        cursor: not-allowed; /* Change the cursor to 'not-allowed' to indicate it's disabled */
+    }
+    .btn-fixed-width {
+        width: 120px; /* Adjust the width as per your preference */
+    }
 
 </style>
 <div class="mx-0 py-5 px-3 mx-ns-4 bg-gradient-light shadow blur d-flex w-100 justify-content-center align-items-center flex-column">
@@ -54,7 +186,11 @@ foreach ($user->fetch_assoc() as $k => $v) {
                         <h3>My Services</h3>
                        <!-- ... The rest of your HTML code ... -->
 
-                       <div class="col-lg-12">
+   <!-- ... Your existing HTML code ... -->
+
+<!-- ... Your existing HTML code ... -->
+
+<div class="col-lg-12">
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -69,13 +205,18 @@ foreach ($user->fetch_assoc() as $k => $v) {
         </thead>
         <tbody>
             <?php 
-            $qry = $conn->query("SELECT p.*, c.slected, c.status, c.date_clicked, m.firstname, m.lastname FROM post_list p 
+            // Fetch service requests sent by the connected member (status = 1)
+            $service_requests_qry = $conn->query("SELECT p.*, c.slected, c.status, c.date_clicked, m.firstname, m.lastname FROM post_list p 
                 INNER JOIN checkhand_list c ON p.id = c.post_id
                 INNER JOIN member_list m ON p.member_id = m.id
-                WHERE c.slected = '{$_settings->userdata('id')}'
+                WHERE c.slected = '{$_settings->userdata('id')}' AND c.status = 1
                 ORDER BY unix_timestamp(p.date_updated) DESC");
 
-            while($row = $qry->fetch_assoc()):
+            // Create a flag to check if any records are displayed
+            $recordsDisplayed = false;
+
+            while($row = $service_requests_qry->fetch_assoc()):
+                $recordsDisplayed = true; // Set the flag to true for each record displayed
                 $files = array();
                 $fopen = scandir(base_app.$row['upload_path']);
                 foreach($fopen as $fname){
@@ -91,43 +232,71 @@ foreach ($user->fetch_assoc() as $k => $v) {
                 </td>
                 <td><?= $row['coin_value'] ?></td>
                 <td>
-                    <?php if ($row['status'] == 1): ?>
-                        <button class="btn btn-accepted">Accepted</button>
-                    <?php else: ?>
-                        Not Available
-                    <?php endif; ?>
+                    <button class="btn btn-accepted">Accepted</button>
                 </td>
                 <td><?= ($row['status'] == 1) ? date("M d, Y h:i A", strtotime($row['date_clicked'])) : '' ?></td>
                 <td><?= $row['firstname'] . ' ' . $row['lastname'] ?></td>
-                <td>
-    <form method="post">
-        <input type="hidden" name="postId" value="<?= $row['id'] ?>">
-        <input type="hidden" name="coinsExchanged" value="<?= $row['coin_value'] ?>">
-        <!-- Add the coinsExchanged as a hidden input field here -->
+                <!-- ... Your existing code for displaying the table ... -->
 
-        <?php if ($row['status'] == 1): ?>
-            <button type="submit" class="btn btn-primary btn-action" name="finishService">Finish Service</button>
-        <?php else: ?>
-            <!-- New gray "Stop Service" button -->
-            <button class="btn btn-secondary btn-action" disabled>Finished</button>
-        <?php endif; ?>
-
-    </form>
-</td>
 <td>
-    <?php if ($row['status'] == 1): ?>
-        <form method="post">
-            <input type="hidden" name="postId" value="<?= $row['id'] ?>">
-            <button type="submit" class="btn btn-danger btn-action" name="cancelService">Cancel Service</button>
-        </form>
-    <?php endif; ?>
+    <!-- Check if the post ID is already inserted in coin_list with status = 2 -->
+    <?php
+    $check_coin_list_qry = $conn->query("SELECT * FROM coin_list WHERE post_id = '{$row['id']}' AND status = '2' LIMIT 1");
+    if ($check_coin_list_qry->num_rows > 0) {
+        // If it exists, disable the "Finish Service" button and apply gray color
+        echo '<button class="btn btn-secondary btn-action btn-fixed-width" disabled>Finished</button>';
+    } else {
+        // If it does not exist, display the "Finish Service" button
+        echo '
+        <form method="post" style="display:inline;">
+            <input type="hidden" name="postId" value="' . $row['id'] . '">
+            <button type="submit" class="btn btn-primary btn-action btn-fixed-width" name="finishService">Finish Service</button>
+        </form>';
+    }
+    ?>
 </td>
+
+<td>
+    <!-- Check if the post ID is already inserted in coin_list with status = 7 -->
+    <?php
+    $check_coin_list_qry = $conn->query("SELECT * FROM coin_list WHERE post_id = '{$row['id']}' AND status = '7' LIMIT 1");
+    if ($check_coin_list_qry->num_rows > 0) {
+        // If it exists, disable the "Cancel Service" button and apply a different color
+        echo '<button class="btn btn-warning btn-action btn-fixed-width" disabled>Service Canceled</button>';
+    } elseif ($row['status'] == 1) {
+        // If it does not exist and the status is 1 (accepted), display the "Cancel Service" button
+        echo '
+        <form method="post" style="display:inline;">
+            <input type="hidden" name="postId" value="' . $row['id'] . '">
+            <button type="submit" class="btn btn-danger btn-action btn-fixed-width" name="cancelService">Cancel Service</button>
+        </form>';
+    } else {
+        // For other cases, display an empty cell
+        echo '';
+    }
+    ?>
+</td>
+
+<!-- ... The rest of your HTML code ... -->
 
             </tr>
             <?php endwhile; ?>
+
+            <?php
+            // If no records are displayed, show a message in a new row
+            if (!$recordsDisplayed):
+            ?>
+            <tr>
+                <td colspan="7">No service requests found.</td>
+            </tr>
+            <?php endif; ?>
         </tbody>
     </table>
 </div>
+
+<!-- ... The rest of your HTML code ... -->
+
+<!-- ... The rest of your HTML code ... -->
 
                     </div>
                 </div>
@@ -135,59 +304,4 @@ foreach ($user->fetch_assoc() as $k => $v) {
         </div>
     </div>
 </div>
-<?php
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['finishService'])) {
-        // Assuming $_POST['postId'] is correctly set, you should validate and sanitize the input before using it in the query.
-        $postId = $_POST['postId'];
-        $coinsExchanged = $_POST['coinsExchanged']; // Capture the value of coinsExchanged from the form submission.
-        $dateNow = date("Y-m-d H:i:s"); // Current date and time.
-        
-        // Assuming you have the necessary data to insert into the coin_list table.
-        $senderId = $_settings->userdata('id'); // The sender is the connected member (the one currently logged in).
-
-        // Check if the coin_list entry already exists for the given postId
-        $check_existing_qry = $conn->query("SELECT * FROM coin_list WHERE post_id = '{$postId}' LIMIT 1");
-        if ($check_existing_qry->num_rows == 0) {
-            // Insert the new row into the coin_list table.
-            $qry = $conn->query("SELECT p.*, c.slected, c.status, c.date_clicked, m.firstname, m.lastname, m.id as receiver_id
-            FROM post_list p 
-            INNER JOIN checkhand_list c ON p.id = c.post_id
-            INNER JOIN member_list m ON p.member_id = m.id
-            WHERE c.slected = '{$_settings->userdata('id')}'
-            ORDER BY unix_timestamp(p.date_updated) DESC");
-
-            // Move the PHP form submission handling inside the while loop
-            while ($row = $qry->fetch_assoc()) {
-                if (isset($_POST['postId']) && $_POST['postId'] == $row['id']) {
-                    $receiverId = $row['receiver_id']; // Move this line inside the while loop to get the receiver ID from the current row.
-                    $insert_coin_list_qry = $conn->query("INSERT INTO coin_list (sender_id, receiver_id, post_id, coins_exchanged, date_created, date_updated, deadline, status) 
-                                             VALUES ('{$senderId}', '{$receiverId}', '{$postId}', '{$coinsExchanged}', 
-                                                     '{$dateNow}', '{$dateNow}', '{$dateNow}', '2')");
-
-                   /* if (!$insert_coin_list_qry) {
-                        echo "Error: " . $conn->error; // Display the SQL error if any.
-                        // You can also log the error to a log file for further analysis.
-                    }*/
-
-                    // Check if the insert was successful, and handle any errors if necessary.
-                    if ($insert_coin_list_qry) {
-                        // Insert successful, do something (e.g., display a success message).
-                    } else {
-                        // Insert failed, do something (e.g., display an error message).
-                    }
-                    break; // Exit the loop after insertion to avoid multiple inserts.
-                }
-            }
-        }
-
-        // After processing the form submission, perform a redirect to the same page (Post/Redirect/Get pattern).
-        //header("Location: http://localhost/s4s/user/");
-        exit(); // Terminate the script to ensure a clean redirect.
-    } elseif (isset($_POST['cancelService'])) {
-        // Code to handle the "Cancel Service" button click
-        // ...
-    }
-}
-?>
 
