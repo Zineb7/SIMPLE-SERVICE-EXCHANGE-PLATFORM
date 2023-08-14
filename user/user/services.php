@@ -290,7 +290,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <th>Status</th>
                 <th>Date Requested</th>
                 <th>Service Requester</th>
-                <th>Action</th>
+                <th>Action1</th>
+                <th>Action2</th>
             </tr>
         </thead>
         <tbody>
@@ -336,6 +337,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <button type="submit" class="btn btn-success btn-action btn-fixed-width" name="acceptFinish">Accept Finish</button>
                     </form>
                 </td>
+                <td>
+                <form method="post" style="display:inline;">
+                    <input type="hidden" name="requestId" value="<?= $row['id'] ?>">
+                    <button type="submit" class="btn btn-danger btn-action btn-fixed-width" name="declineFinish">Refuse Finish</button>
+                </form>
+            </td>
             </tr>
             <?php endwhile; ?>
 
@@ -354,74 +361,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 <?php
+function getPostOwnerMemberId($conn, $postId) {
+    $query = "SELECT member_id FROM post_list WHERE id = '{$postId}' LIMIT 1";
+    $result = $conn->query($query);
+
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        return $row['member_id'];
+    } else {
+        return null;
+    }
+}
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ... Your existing code ...
 
     // Handle "Accept Finish" button click
     if (isset($_POST['acceptFinish'])) {
         $postId = $_POST['requestId'];
-        $get_coin_value_qry = $conn->query("SELECT coin_value FROM post_list WHERE id = '{$postId}' LIMIT 1");
+        $get_coin_value_qry = $conn->query("SELECT coin_value, member_id FROM post_list WHERE id = '{$postId}' LIMIT 1");
+        
         if ($get_coin_value_qry->num_rows > 0) {
             $row = $get_coin_value_qry->fetch_assoc();
             $coinsExchanged = $row['coin_value'];
-
-            $dateNow = date("Y-m-d H:i:s"); // Current date and time.
-
-            // Assuming you have the necessary data to insert into the coin_list table.
-            $senderId =getOwnerMemberId($postId) ; // The sender is the connected member (the one currently logged in).
-            $receiverId = $_settings->userdata('id'); // Get the owner's member ID using the function.
-
-            // Check if the coin_list entry already exists for the given postId
-            $check_existing_qry = $conn->query("SELECT * FROM coin_list WHERE post_id = '{$postId}' LIMIT 1");
+            $ownerId = $_settings->userdata('id'); // Connected member's ID as the owner
             
-                // If the coin_list entry does not exist, insert the new row into the coin_list table.
+            // Get the actual provider's member ID based on the post ID from checkhand_list table
+            $providerIdQuery = $conn->query("SELECT member_id FROM checkhand_list WHERE post_id = '{$postId}' LIMIT 1");
+            if ($providerIdQuery->num_rows > 0) {
+                $providerRow = $providerIdQuery->fetch_assoc();
+                $providerId = $providerRow['member_id']; // Provider's member ID
+            } else {
+                // Handle the case when provider's member ID is not found.
+                echo '<div class="alert alert-danger">Provider member not found.</div>';
+                exit;
+            }
+    
+            $dateNow = date("Y-m-d H:i:s"); // Current date and time.
+    
+            // Get the owner's member ID based on the post ID using the new function
+            $ownerId = getPostOwnerMemberId($conn, $postId); // The owner's member ID
+    
+            if ($ownerId !== null) {
                 $insert_coin_list_qry = $conn->query("INSERT INTO coin_list (sender_id, receiver_id, post_id, coins_exchanged, date_created, date_updated, deadline, status) 
-                                                     VALUES ('{$senderId}', '{$receiverId}', '{$postId}', '{$coinsExchanged}', 
+                                                     VALUES ('{$ownerId}', '{$providerId}', '{$postId}', '{$coinsExchanged}', 
                                                              '{$dateNow}', '{$dateNow}', '{$dateNow}', '3')");
-
+    
                 if ($insert_coin_list_qry) {
                     // Insert successful, disable the "Finish Service" button after insertion.
+                    $update_sender_balance_qry = $conn->query("UPDATE member_list 
+                    SET coin = coin + {$coinsExchanged} 
+                    WHERE id = '{$providerId}'");
+
                     echo "<script>document.getElementById('btn_finish_{$postId}').setAttribute('disabled', true);</script>";
                 } else {
                     echo '<div class="alert alert-danger">Error inserting coin_list record: ' . $conn->error . '</div>';
                 }
                 echo '<script>window.location.href = window.location.href;</script>';
                 exit;
-            
-        }
-        /*
-        $requestId = $_POST['requestId'];
-        
-        // Get the details of the request
-        $get_request_qry = $conn->query("SELECT * FROM coin_list WHERE id = '{$requestId}' AND status = 2");
-        if ($get_request_qry->num_rows > 0) {
-            $requestData = $get_request_qry->fetch_assoc();
-            
-            $dateNow = date("Y-m-d H:i:s"); // Current date and time.
-            $coinsExchanged = $requestData['coins_exchanged']; // Use the existing coins_exchanged value
-            
-            // Assuming you have the necessary data to insert into the coin_list table.
-            // Assuming you have the necessary data to insert into the coin_list table.
-            $senderId = $_settings->userdata('id'); // The sender is the connected member (the one currently logged in).
-            $receiverId = getOwnerMemberId($postId); // Get the owner's member ID using the function.
-
-            // Insert the new row into the coin_list table with status = 3
-            $insert_coin_list_qry = $conn->query("INSERT INTO coin_list (sender_id, receiver_id, post_id, coins_exchanged, date_created, date_updated, deadline, status) 
-                                                 VALUES ('{$senderId}', '{$receiverId}', '{$requestData['post_id']}', '{$coinsExchanged}', 
-                                                         '{$dateNow}', '{$dateNow}', '{$dateNow}', '3')");
-
-            if ($insert_coin_list_qry) {
-                // Insert successful
-                echo '<div class="alert alert-success">Accepted finish request. Coins added to seeker\'s balance.</div>';
             } else {
-                // Insert failed
-                echo '<div class="alert alert-danger">Failed to accept finish request: ' . $conn->error . '</div>';
+                echo '<div class="alert alert-danger">Owner member not found.</div>';
+                exit;
             }
-        } else {
-            // Request not found or status is not 2
-            echo '<div class="alert alert-danger">Invalid finish request.</div>';
-        }*/
+        }
     }
+    
 }
 
 ?>
