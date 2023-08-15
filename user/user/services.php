@@ -155,6 +155,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 </style>
+
+
 <div class="mx-0 py-5 px-3 mx-ns-4 bg-gradient-light shadow blur d-flex w-100 justify-content-center align-items-center flex-column">
     <img src="<?= validate_image(isset($avatar) ? $avatar : '') ?>" alt="" class="img-thumbnail rounded-circle p-0" id="profile-avatar">
     <h3 class="text-center font-weight-bolder"><?= isset($name) ? $name : '' ?></h3>
@@ -204,10 +206,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             ?>
             <tr>
-                <td>
-                    <!-- Link to view_post page with the corresponding post ID -->
-                    <a href="?page=posts/view_post&id=<?= $row['id'] ?>"><?= $row['id'] ?></a>
-                </td>
+            <td>
+                <!-- Link to view_post page with the corresponding post ID -->
+                <a href="?page=posts/view_post&id=<?= $row['id'] ?>"><?= $row['id'] ?></a>
+            </td>
+
                 <td><?= $row['coin_value'] ?></td>
                 <td>
                     <button class="btn btn-accepted">Accepted</button>
@@ -334,7 +337,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <td>
                     <form method="post" style="display:inline;">
                         <input type="hidden" name="requestId" value="<?= $row['id'] ?>">
-                        <button type="submit" class="btn btn-success btn-action btn-fixed-width" name="acceptFinish">Accept Finish</button>
+                        <button id="btn_acceptFinish_<?= $postId ?>" class="btn btn-success btn-action btn-fixed-width" type="submit" name="acceptFinish">Accept Finish</button>
                     </form>
                 </td>
                 <td>
@@ -377,11 +380,21 @@ function getPostOwnerMemberId($conn, $postId) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ... Your existing code ...
 
-    // Handle "Accept Finish" button click
-    if (isset($_POST['acceptFinish'])) {
-        $postId = $_POST['requestId'];
+// Handle "Accept Finish" button click
+if (isset($_POST['acceptFinish'])) {
+    $postId = $_POST['requestId'];
+
+    // Check if a query with status = 3 already exists for the clicked post
+    $check_query_exists = $conn->query("SELECT id FROM coin_list WHERE post_id = '{$postId}' AND status = 3 LIMIT 1");
+    
+    if ($check_query_exists->num_rows > 0) {
+        // If a query with status = 3 exists, disable the button and change its color
+        echo "<script>document.getElementById('btn_acceptFinish_{$postId}').setAttribute('disabled', true);
+                      document.getElementById('btn_acceptFinish_{$postId}').classList.add('btn-disabled');</script>";
+    } else {
+        // If the query doesn't exist, proceed with inserting a new record
         $get_coin_value_qry = $conn->query("SELECT coin_value, member_id FROM post_list WHERE id = '{$postId}' LIMIT 1");
-        
+
         if ($get_coin_value_qry->num_rows > 0) {
             $row = $get_coin_value_qry->fetch_assoc();
             $coinsExchanged = $row['coin_value'];
@@ -405,16 +418,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
             if ($ownerId !== null) {
                 $insert_coin_list_qry = $conn->query("INSERT INTO coin_list (sender_id, receiver_id, post_id, coins_exchanged, date_created, date_updated, deadline, status) 
-                                                     VALUES ('{$ownerId}', '{$providerId}', '{$postId}', '{$coinsExchanged}', 
+                                                     VALUES ('{$providerId}', '{$ownerId}', '{$postId}', '{$coinsExchanged}', 
                                                              '{$dateNow}', '{$dateNow}', '{$dateNow}', '3')");
     
                 if ($insert_coin_list_qry) {
-                    // Insert successful, disable the "Finish Service" button after insertion.
+                    // Insert successful, disable the button after successful insertion
                     $update_sender_balance_qry = $conn->query("UPDATE member_list 
-                    SET coin = coin + {$coinsExchanged} 
-                    WHERE id = '{$providerId}'");
-
-                    echo "<script>document.getElementById('btn_finish_{$postId}').setAttribute('disabled', true);</script>";
+                                                             SET coin = coin + {$coinsExchanged} 
+                                                             WHERE id = '{$providerId}'");
+                     // Disable the button after successful insertion and change its color
+                    echo "<script>document.getElementById('btn_acceptFinish_{$postId}').setAttribute('disabled', true);
+                                  document.getElementById('btn_acceptFinish_{$postId}').classList.add('btn-disabled');</script>";
                 } else {
                     echo '<div class="alert alert-danger">Error inserting coin_list record: ' . $conn->error . '</div>';
                 }
@@ -426,6 +440,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+}
+
+
     
 }
 

@@ -324,13 +324,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 				//Insert new query in CoinList
 				$insert_coin_list_qry = $conn->query("INSERT INTO coin_list (sender_id, receiver_id, post_id, coins_exchanged, date_created, date_updated, deadline, status) 
-                                         VALUES ('{$_settings->userdata('id')}', '{$acceptedMemberId}', '{$postId}', '{$coins_exchanged}', 
+                                         VALUES ('{$acceptedMemberId}', '{$_settings->userdata('id')}', '{$postId}', '{$coins_exchanged}', 
                                                  '{$date_created}', '{$date_updated}', '{$deadline}', '{$status}')");
 
 				
 				
 				echo "Request accepted successfully!! Post ID: {$postId}, Checkhand List ID: {$updatedCheckhandId}, Accepted Member ID: {$acceptedMemberId}";
 				//header("Location: user/home.php");
+				echo '<script>window.location.href = window.location.href;</script>';
 
             } else {
                 echo "Error updating handshake status or deducting coins.";
