@@ -16,9 +16,7 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
         }
 		if(isset($id)){
 			$qry_checkhand = $conn->query("SELECT post_id FROM `checkhand_list` where post_id = '{$id}' and member_id = '{$_settings->userdata('id')}'")->num_rows > 0;
-			$qry_like = $conn->query("SELECT post_id FROM `like_list` where post_id = '{$id}' and member_id = '{$_settings->userdata('id')}'")->num_rows > 0;
-		
-			//tester 
+			$qry_like = $conn->query("SELECT post_id FROM `like_list` where post_id = '{$id}' and member_id = '{$_settings->userdata('id')}'")->num_rows > 0; 
 		}
 		
 		
@@ -210,7 +208,7 @@ if ($qry_options->num_rows > 0) {
     $offset = max(0, ($current_page - 1) * $rows_per_page);
 
     // Fetch total number of rows for pagination
-    $post_id = $id; // Replace 26 with the actual post_id for which you want to retrieve handshake members
+    $post_id = $_GET['id']; // Replace 26 with the actual post_id for which you want to retrieve handshake members
     $total_rows_qry = $conn->query("SELECT COUNT(*) as total FROM `checkhand_list` WHERE `post_id` = '{$post_id}'");
     $total_rows = $total_rows_qry->fetch_assoc()['total'];
 

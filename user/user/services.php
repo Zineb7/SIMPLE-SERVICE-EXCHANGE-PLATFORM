@@ -176,6 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?= isset($email) ? $email : '' ?>
     </div>
 </div>
+<!--TABLE OF MY SERVICES-->
 <div class="row justify-content-center" style="margin-top:-2em;">
     <div class="col-lg-10 col-md-11 col-sm-12 col-xs-12">
         <div class="card rounded-0 shadow">
@@ -229,8 +230,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 <?= $row['coin_value'] ?>
                                             </td>
                                             <td>
-    <span class="btn btn-success btn-action btn-fixed-width disabled">Accepted</span>
-</td>
+                                                <span
+                                                    class="btn btn-success btn-action btn-fixed-width disabled">Accepted</span>
+                                            </td>
 
                                             <td>
                                                 <?= ($row['status'] == 1) ? date("M d, Y h:i A", strtotime($row['date_clicked'])) : '' ?>
@@ -259,7 +261,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                         echo '
                                                         <form method="post" style="display:inline;">
                                                             <input type="hidden" name="postId" value="' . $row['id'] . '">
-                                                            <button type="submit" class="btn btn-primary btn-action btn-fixed-width" name="finishService">Finish Service</button>
+                                                            <button type="submit" class="btn btn-primary btn-action btn-fixed-width" name="finishService" style="background-color: #007bff !important; border-color: #007bff !important;">Finish Service</button>
                                                         </form>';
                                                     }
                                                 } else {
@@ -303,9 +305,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </table>
                         </div>
 
-
+                        <!--TABLE OF REQUESTS-->
                         <div class="col-lg-12 mt-4">
-                            <h3>Requests for Finishing Services (Post Owners)</h3>
+                            <h3>Requests for Finishing Services </h3>
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
@@ -355,8 +357,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 <?= $coinsExchanged ?>
                                             </td>
                                             <td>
-    <span class="btn btn-primary btn-action btn-fixed-width disabled">Asked Finish</span>
-</td>
+                                                <span class="btn btn-primary btn-action btn-fixed-width disabled">Asked
+                                                    Finish</span>
+                                            </td>
 
                                             <td>
                                                 <?= date("M d, Y h:i A", strtotime($row['date_created'])) ?>
@@ -426,8 +429,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
                         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                            // ... Your existing code ...
-                        
+
                             // Handle "Accept Finish" button click
                             if (isset($_POST['acceptFinish'])) {
                                 $postId = $_POST['requestId'];
@@ -489,6 +491,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     }
                                 }
                             }
+                            //Handle "Refuse Finish" button click
+                            // Handle "Refuse Finish" button click
+                            if (isset($_POST['declineFinish'])) {
+                                $postId = $_POST['requestId'];
+                                $dateNow = date("Y-m-d H:i:s"); // Current date and time.
+                        
+                                // Get the connected member's ID as the owner
+                                $ownerId = $_settings->userdata('id');
+
+                                // Get the actual provider's member ID based on the post ID from checkhand_list table
+                                $providerIdQuery = $conn->query("SELECT member_id FROM checkhand_list WHERE post_id = '{$postId}' LIMIT 1");
+                                if ($providerIdQuery->num_rows > 0) {
+                                    $providerRow = $providerIdQuery->fetch_assoc();
+                                    $providerId = $providerRow['member_id']; // Provider's member ID
+                                } else {
+                                    // Handle the case when provider's member ID is not found.
+                                    echo '<div class="alert alert-danger">Provider member not found.</div>';
+                                    exit;
+                                }
+
+                                // Insert the new query with status number 4 into the coin_list table
+                                $insert_coin_list_qry = $conn->query("INSERT INTO coin_list (sender_id, receiver_id, post_id, coins_exchanged, date_created, date_updated, deadline, status) 
+                                         VALUES ('{$ownerId}', '{$providerId}', '{$postId}', '{$coinsExchanged}', '{$dateNow}', '{$dateNow}', '{$dateNow}', '4')");
+
+                                if ($insert_coin_list_qry) {
+                                    // Disable the button and change its color after successful insertion
+                                    echo "<script>document.getElementById('btn_declineFinish_{$postId}').setAttribute('disabled', true);
+              document.getElementById('btn_declineFinish_{$postId}').classList.add('btn-disabled');</script>";
+                                } else {
+                                    echo '<div class="alert alert-danger">Error inserting coin_list record: ' . $conn->error . '</div>';
+                                }
+                                echo '<script>window.location.href = window.location.href;</script>';
+                                exit;
+                            }
+
 
 
 
