@@ -368,34 +368,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 <?= $row['firstname'] . ' ' . $row['lastname'] ?>
                                             </td>
                                             <td>
-                                                <form method="post" style="display:inline;">
-                                                    <input type="hidden" name="requestId" value="<?= $row['id'] ?>">
-                                                    <?php
-                                                    if ($row['status'] == 7) {
-                                                        // Status is 7, so display the button normally
-                                                        echo '<button id="btn_acceptFinish_' . $postId . '" class="btn btn-success btn-action btn-fixed-width" type="submit" name="acceptFinish">Accept Finish</button>';
-                                                    } else {
-                                                        // Check if a query with status = 3 already exists for the clicked post
-                                                        $check_query_exists = $conn->query("SELECT id FROM coin_list WHERE post_id = '{$row['id']}' AND status = 3 LIMIT 1");
+    <form id="acceptForm_<?= $row['id'] ?>" method="post" style="display:inline;">
+        <input type="hidden" name="requestId" value="<?= $row['id'] ?>">
+        <?php
+        if ($row['status'] == 7) {
+            // Status is 7, so display the button normally
+            echo '<button id="btn_acceptFinish_' . $postId . '" class="btn btn-success btn-action btn-fixed-width" type="submit" name="acceptFinish">Accept Finish</button>';
+        } else {
+            // Check if a query with status = 3 already exists for the clicked post
+            $check_query_exists = $conn->query("SELECT id FROM coin_list WHERE post_id = '{$row['id']}' AND status = 3 LIMIT 1");
 
-                                                        if ($check_query_exists->num_rows > 0) {
-                                                            // If a query with status = 3 exists, disable the button and change its color
-                                                            echo '<button id="btn_acceptFinish_' . $postId . '" class="btn btn-secondary btn-action btn-fixed-width"   style="background-color: #28a745 !important; border-color: #28a745 !important;" disabled>Accept Finish</button>';
-                                                        } else {
-                                                            // If the query doesn't exist, display the button normally
-                                                            echo '<button id="btn_acceptFinish_' . $postId . '" class="btn btn-success btn-action btn-fixed-width" type="submit" name="acceptFinish">Accept Finish</button>';
-                                                        }
-                                                    }
-                                                    ?>
-                                                </form>
-                                            </td>
-                                            <td>
-                                                <form method="post" style="display:inline;">
-                                                    <input type="hidden" name="requestId" value="<?= $row['id'] ?>">
-                                                    <button type="submit" class="btn btn-danger btn-action btn-fixed-width"
-                                                        name="declineFinish">Refuse Finish</button>
-                                                </form>
-                                            </td>
+            if ($check_query_exists->num_rows > 0) {
+                // If a query with status = 3 exists, disable the button and change its color
+                echo '<button id="btn_acceptFinish_' . $postId . '" class="btn btn-secondary btn-action btn-fixed-width"   style="background-color: #28a745 !important; border-color: #28a745 !important;" disabled>Accept Finish</button>';
+            } else {
+                // If the query doesn't exist, display the button normally
+                echo '<button id="btn_acceptFinish_' . $postId . '" class="btn btn-success btn-action btn-fixed-width" type="submit" name="acceptFinish">Accept Finish</button>';
+            }
+        }
+        ?>
+    </form>
+</td>
+<td>
+    <form id="declineForm_<?= $row['id'] ?>" method="post" style="display:inline;">
+        <input type="hidden" name="requestId" value="<?= $row['id'] ?>">
+        <?php
+        // Check if a query with status = 4 already exists for the clicked post
+        $check_query_exists = $conn->query("SELECT id FROM coin_list WHERE post_id = '{$row['id']}' AND status = 4 LIMIT 1");
+
+        if ($check_query_exists->num_rows > 0) {
+            // If a query with status = 4 exists, disable the button and change its color
+            echo '<button type="submit" class="btn btn-danger btn-action btn-fixed-width btn-disabled" disabled>Refuse Finish</button>';
+        } else {
+            // If the query doesn't exist, display the button normally
+            echo '<button type="submit" class="btn btn-danger btn-action btn-fixed-width" name="declineFinish">Refuse Finish</button>';
+        }
+        ?>
+    </form>
+</td>
+
+<script>
+    document.getElementById("acceptForm_<?= $row['id'] ?>").addEventListener("submit", function() {
+        // Disable the "Refuse Finish" button when the "Accept Finish" button is clicked
+        document.getElementById("declineForm_<?= $row['id'] ?>").querySelector("button").setAttribute("disabled", true);
+    });
+
+    document.getElementById("declineForm_<?= $row['id'] ?>").addEventListener("submit", function() {
+        // Alert the admin
+        alert("Refused Finish! An admin notification has been sent.");
+        
+        // Update the query status to 4 in the backend (you need to implement this)
+        // ... Update the query status here ...
+    });
+</script>
+
+
+
                                         </tr>
                                     <?php endwhile; ?>
 
@@ -440,7 +468,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 if ($check_query_exists->num_rows > 0) {
                                     // If a query with status = 3 exists, disable the button and change its color
                                     echo "<script>document.getElementById('btn_acceptFinish_{$postId}').setAttribute('disabled', true);
-                      document.getElementById('btn_acceptFinish_{$postId}').classList.add('btn-disabled');</script>";
+                                    document.getElementById('btn_acceptFinish_{$postId}').classList.add('btn-disabled');</script>";
                                 } else {
                                     // If the query doesn't exist, proceed with inserting a new record
                                     $get_coin_value_qry = $conn->query("SELECT coin_value, member_id FROM post_list WHERE id = '{$postId}' LIMIT 1");
@@ -478,7 +506,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                              WHERE id = '{$providerId}'");
                                                 // Disable the button after successful insertion and change its color
                                                 echo "<script>document.getElementById('btn_acceptFinish_{$postId}').setAttribute('disabled', true);
-                                  document.getElementById('btn_acceptFinish_{$postId}').classList.add('btn-disabled');</script>";
+                                                document.getElementById('btn_acceptFinish_{$postId}').classList.add('btn-disabled');</script>";
                                             } else {
                                                 echo '<div class="alert alert-danger">Error inserting coin_list record: ' . $conn->error . '</div>';
                                             }
@@ -492,7 +520,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 }
                             }
                             //Handle "Refuse Finish" button click
-                            // Handle "Refuse Finish" button click
                             if (isset($_POST['declineFinish'])) {
                                 $postId = $_POST['requestId'];
                                 $dateNow = date("Y-m-d H:i:s"); // Current date and time.
@@ -518,7 +545,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 if ($insert_coin_list_qry) {
                                     // Disable the button and change its color after successful insertion
                                     echo "<script>document.getElementById('btn_declineFinish_{$postId}').setAttribute('disabled', true);
-              document.getElementById('btn_declineFinish_{$postId}').classList.add('btn-disabled');</script>";
+                                    document.getElementById('btn_declineFinish_{$postId}').classList.add('btn-disabled');</script>";
                                 } else {
                                     echo '<div class="alert alert-danger">Error inserting coin_list record: ' . $conn->error . '</div>';
                                 }
