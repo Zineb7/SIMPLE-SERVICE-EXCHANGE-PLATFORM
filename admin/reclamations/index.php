@@ -10,55 +10,48 @@
 	</div>
 	<div class="card-body">
         <div class="container-fluid">
-			<table class="table table-hover table-striped table-bordered" id="list">
-				<colgroup>
-					<col width="5%">
-					<col width="15%">
-					<col width="20%">
-					<col width="30%">
-					<col width="10%">
-					<col width="10%">
-					<col width="10%">
-				</colgroup>
-				<thead>
-					<tr>
-						<th>#</th>
-						<th>Date Created</th>
-						<th>Member</th>
-						<th>Caption</th>
-						<th>Likes</th>
-						<th>Comments</th>
-						<th>Action</th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php 
-					$i = 1;
-						$qry = $conn->query("SELECT p.*, concat(m.firstname, ' ', coalesce(concat(m.middlename,' '),''),m.lastname) as `name`, m.avatar, COALESCE((SELECT count(member_id) FROM `like_list` where post_id = p.id),0) as `likes`, COALESCE((SELECT count(member_id) FROM `comment_list` where post_id = p.id),0) as `comments` FROM post_list p inner join `member_list` m on p.member_id = m.id where p.member_id = '{$_settings->userdata('id')}' order by unix_timestamp(p.date_updated) desc");
-						while($row = $qry->fetch_assoc()):
-					?>
-						<tr>
-							<td class="text-center"><?php echo $i++; ?></td>
-							<td><?php echo date("Y-m-d H:i",strtotime($row['date_created'])) ?></td>
-							<td><?php echo $row['name'] ?></td>
-							<td class=""><p class="m-0 truncate-1"><?= $row['caption'] ?></p></td>
-							<td class="text-right"><?php echo format_num($row['likes']) ?></td>
-							<td class="text-right"><?php echo format_num($row['comments']) ?></td>
-							<td align="center">
-								 <button type="button" class="btn btn-flat p-1 btn-default btn-sm dropdown-toggle dropdown-icon" data-toggle="dropdown">
-				                  		Action
-				                    <span class="sr-only">Toggle Dropdown</span>
-				                  </button>
-				                  <div class="dropdown-menu" role="menu">
-				                    <a class="dropdown-item view_data" href="./?page=posts/view_post&id=<?php echo $row['id'] ?>"><span class="fa fa-eye text-dark"></span> View</a>
-				                    <div class="dropdown-divider"></div>
-				                    <a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Delete</a>
-				                  </div>
-							</td>
-						</tr>
-					<?php endwhile; ?>
-				</tbody>
-			</table>
+		<table class="table table-hover table-striped table-bordered" id="list">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Date Created</th>
+            <th>Provider</th>
+            <th>Receiver</th>
+            <th>Post Caption</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php 
+        $i = 1;
+        $qry = $conn->query("SELECT cl.*, CONCAT(mp.firstname, ' ', COALESCE(CONCAT(mp.middlename, ' '), ''), mp.lastname) AS provider_name, CONCAT(mr.firstname, ' ', COALESCE(CONCAT(mr.middlename, ' '), ''), mr.lastname) AS receiver_name, p.caption, p.id AS post_id FROM coin_list cl INNER JOIN member_list mp ON cl.sender_id = mp.id INNER JOIN member_list mr ON cl.receiver_id = mr.id INNER JOIN post_list p ON cl.post_id = p.id WHERE cl.status = 4 UNION SELECT cl.*, CONCAT(mp.firstname, ' ', COALESCE(CONCAT(mp.middlename, ' '), ''), mp.lastname) AS provider_name, CONCAT(mr.firstname, ' ', COALESCE(CONCAT(mr.middlename, ' '), ''), mr.lastname) AS receiver_name, p.caption, p.id AS post_id FROM coin_list cl INNER JOIN member_list mp ON cl.sender_id = mp.id INNER JOIN member_list mr ON cl.receiver_id = mr.id INNER JOIN post_list p ON cl.post_id = p.id WHERE cl.status = 7");
+        while($row = $qry->fetch_assoc()):
+        ?>
+        <tr>
+            <td class="text-center"><?php echo $i++; ?></td>
+            <td><?php echo date("Y-m-d H:i", strtotime($row['date_created'])) ?></td>
+            <td><?php echo $row['provider_name'] ?></td>
+            <td><?php echo $row['receiver_name'] ?></td>
+            <td class=""><p class="m-0 truncate-1"><?= $row['caption'] ?></p></td>
+            <td align="center">
+                <button type="button" class="btn btn-flat p-1 btn-default btn-sm dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                    Action
+                    <span class="sr-only">Toggle Dropdown</span>
+                </button>
+				<div class="dropdown-menu" role="menu">
+				<a class="dropdown-item view_data" href="/s4s/admin/posts/view_post.php?id=<?php echo $row['post_id'] ?>"><span class="fa fa-eye text-dark"></span> View</a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item accept_data" href="javascript:void(0)" data-id="<?php echo $row['post_id'] ?>"><span class="fa fa-check text-success"></span> Accept</a>
+    <a class="dropdown-item decline_data" href="javascript:void(0)" data-id="<?php echo $row['post_id'] ?>"><span class="fa fa-times text-danger"></span> Decline</a>
+</div>
+
+
+            </td>
+        </tr>
+        <?php endwhile; ?>
+    </tbody>
+</table>
+
 		</div>
 	</div>
 </div>
