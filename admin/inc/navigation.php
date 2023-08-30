@@ -44,7 +44,7 @@
                       <a href="<?php echo base_url ?>admin/?page=posts" class="nav-link nav-posts">
                         <i class="nav-icon fas fa-file-alt"></i>
                         <p>
-                          List of Posts
+                          List of Services
                         </p>
                       </a>
                     </li>

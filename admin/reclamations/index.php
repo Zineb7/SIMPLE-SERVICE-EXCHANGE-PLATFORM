@@ -39,7 +39,7 @@
                     <span class="sr-only">Toggle Dropdown</span>
                 </button>
 				<div class="dropdown-menu" role="menu">
-				<a class="dropdown-item view_data" href="/s4s/admin/posts/view_post.php?id=<?php echo $row['post_id'] ?>"><span class="fa fa-eye text-dark"></span> View</a>
+				<a class="dropdown-item view_data" href="/s4s/admin/reclamations/view_post_id.php?id=<?php echo $row['post_id'] ?>"><span class="fa fa-eye text-dark"></span> View</a>
     <div class="dropdown-divider"></div>
     <a class="dropdown-item accept_data" href="javascript:void(0)" data-id="<?php echo $row['post_id'] ?>"><span class="fa fa-check text-success"></span> Accept</a>
     <a class="dropdown-item decline_data" href="javascript:void(0)" data-id="<?php echo $row['post_id'] ?>"><span class="fa fa-times text-danger"></span> Decline</a>

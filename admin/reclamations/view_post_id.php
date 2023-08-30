@@ -1,32 +1,33 @@
 <?php
+require_once('./../../config.php');
 
 if(isset($_GET['id']) && $_GET['id'] > 0){
-    $view_post_id = $_GET['id']; // Get the post ID from the URL parameter
-
-    $qry = $conn->query("
-        SELECT p.*, concat(m.firstname, ' ', coalesce(concat(m.middlename,' '),''), m.lastname) as `name`, m.avatar,
-               COALESCE((SELECT count(member_id) FROM `like_list` where post_id = p.id), 0) as `likes`,
-               COALESCE((SELECT count(member_id) FROM `comment_list` where post_id = p.id), 0) as `comments`
-        FROM post_list p
-        INNER JOIN `member_list` m ON p.member_id = m.id
-        WHERE p.id = '{$view_post_id}'"); 
-
-    if($qry->num_rows > 0){
-        foreach($qry->fetch_assoc() as $k => $v){
-            $$k = $v;
-        }
-        if(isset($id)){
-            $qry_like = $conn->query("
-                SELECT post_id FROM `like_list`
-                WHERE post_id = '{$id}' AND member_id = '{$_settings->userdata('id')}'
-            ")->num_rows > 0;
-        }
-    } else {
-        echo '<script> alert("Post ID is invalid."); location.replace("./?page=user/profile");</script>';
-    }
-} else {
-    echo '<script> alert("Post ID is required."); location.replace("./?page=user/profile");</script>';
-}
+    $view_post_id = $_GET['id']; 
+    if(isset($conn)) {
+        $qry = $conn->query("
+            SELECT p.*, concat(m.firstname, ' ', coalesce(concat(m.middlename,' '),''), m.lastname) as `name`, m.avatar,
+                   COALESCE((SELECT count(member_id) FROM `like_list` where post_id = p.id), 0) as `likes`,
+                   COALESCE((SELECT count(member_id) FROM `comment_list` where post_id = p.id), 0) as `comments`
+            FROM post_list p
+            INNER JOIN `member_list` m ON p.member_id = m.id
+            WHERE p.id = '{$view_post_id}'");
+			if($qry->num_rows > 0){
+				foreach($qry->fetch_assoc() as $k => $v){
+					$$k = $v;
+				}
+				if(isset($id)){
+					$qry_like = $conn->query("
+						SELECT post_id FROM `like_list`
+						WHERE post_id = '{$id}' AND member_id = '{$_settings->userdata('id')}'
+					")->num_rows > 0;
+				}
+			} else {
+				echo '<script> alert("Post ID is invalid."); location.replace("./?page=user/profile");</script>';
+			}
+		} else {
+			echo '<script> alert("Post ID is required."); location.replace("./?page=user/profile");</script>';
+		}
+	}
 ?>
 
 <div class="mx-0 py-5 px-3 mx-ns-4 bg-gradient-light shadow blur">
