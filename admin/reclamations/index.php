@@ -198,12 +198,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 											<span class="fa fa-check text-success"></span> Accept
 										</button>
 									</form>
+									<!--
 									<form id="declineForm" method="post" >
 										<input type="hidden" name="postId" value="<?php echo $row['post_id']; ?>">
 										<button type="submit" class="dropdown-item" name="decline">
 											<span class="fa fa-times text-danger"></span> Decline
 										</button>
-									</form>
+									</form>-->
 								</div>
 			</div>
 
