@@ -540,7 +540,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                 // Insert the new query with status number 4 into the coin_list table
                                 $insert_coin_list_qry = $conn->query("INSERT INTO coin_list (sender_id, receiver_id, post_id, coins_exchanged, date_created, date_updated, deadline, status) 
-                                         VALUES ('{$ownerId}', '{$providerId}', '{$postId}', '{$coinsExchanged}', '{$dateNow}', '{$dateNow}', '{$dateNow}', '4')");
+                                         VALUES ('{$providerId}', '{$ownerId}', '{$postId}', '{$coinsExchanged}', '{$dateNow}', '{$dateNow}', '{$dateNow}', '4')");
 
                                 if ($insert_coin_list_qry) {
                                     // Disable the button and change its color after successful insertion
