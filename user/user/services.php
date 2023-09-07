@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Assuming you have the necessary data to insert into the coin_list table.
         $receiverId = getOwnerMemberId($postId); // Get the owner's member ID using the function.
 
-        // Define the coin percentage as a variable
+        // Define the coin percentage variable
         $coinPercentage = 0.25;
 
         if ($receiverId !== null) {

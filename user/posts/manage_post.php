@@ -185,6 +185,21 @@ button {
             var _this = $(this);
             $('.err-msg').remove();
 
+			 // Check if the total value is less than the default value
+			 if (totalCoinValue < defaultCoinValue) {
+                alert('Total coin value cannot be less than the default value.');
+                return; // Prevent form submission
+            }
+			 // Check if Caption, Coin Value, and Options checkboxes are empty
+			 var caption = $('#caption').val();
+            var coinValue = $('#coin_value').val();
+            var selectedOptions = $('input[name^="options_list"]:checked').length;
+
+            if (caption.trim() === '' || coinValue.trim() === '' || selectedOptions === 0) {
+                alert('Please fill in all required fields.');
+                return; // Prevent form submission
+            }
+
             // Get the default coin value
             var defaultCoinValue = parseFloat('<?= isset($coin_value) ? $coin_value : 0 ?>');
 
@@ -192,14 +207,7 @@ button {
             var totalCoinValue = 0;
             const checkboxes = document.querySelectorAll('input[name^="options_list"]:checked');
             checkboxes.forEach((checkbox) => {
-                totalCoinValue += parseFloat(checkbox.value);
-            });
-
-            // Check if the total value is less than the default value
-            if (totalCoinValue < defaultCoinValue) {
-                alert('Total coin value cannot be less than the default value.');
-                return; // Prevent form submission
-            }
+                totalCoinValue += parseFloat(checkbox.value);});	
     $.ajax({
 				url:_base_url_+"classes/Master.php?f=save_post",
 				data: new FormData($(this)[0]),
@@ -294,6 +302,7 @@ button {
 		})
 
 	})
+
 	//DISPLAYED VALUES AFTER CHECKING BOXES OPTIONS
 	function updateSelectedNames(checkbox) {
     const selectedNames = [];
