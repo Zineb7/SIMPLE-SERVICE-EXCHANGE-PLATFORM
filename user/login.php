@@ -18,11 +18,49 @@
       background-repeat:no-repeat;
       backdrop-filter: contrast(1);
     }
-    #page-title{
-      text-shadow: 6px 4px 7px black;
-      font-size: 3.5em;
-      color: #fff4f4 !important;
-    }
+    #page-title {
+  font-size: 45px;
+  text-align: center;
+  line-height: 1.5em;
+  padding-bottom: 45px;
+  font-family: "Playfair Display", serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #777;
+  /* Add a slight blue text shadow */
+  text-shadow: 2px 2px 4px #8DBAFA;
+}
+
+#page-title h1:before {
+  position: absolute;
+  left: 0;
+  bottom: 20px;
+  width: 60%;
+  left: 50%;
+  margin-left: -30%;
+  height: 1px;
+  content: "";
+  background-color: #777;
+  z-index: 4;
+}
+
+#page-title h1:after {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  left: 50%;
+  margin-left: -20px;
+  bottom: 0px;
+  content: '\00a7';
+  font-size: 30px;
+  line-height: 40px;
+  color: #c50000;
+  font-weight: 400;
+  z-index: 5;
+  display: block;
+  background-color: #f8f8f8;
+}
+
   </style>
   <h1 class="text-center text-white px-4 py-5" id="page-title"><b><?php echo $_settings->info('name') ?></b></h1>
 <div class="login-box w-100 h-75">
@@ -39,15 +77,16 @@
                 $files[]= validate_image('uploads/banner/'.$fname);
               }
           ?>
-          <div id="tourCarousel"  class="carousel slide" data-ride="carousel" data-interval="2500" data-pause="false">
-              <div class="carousel-inner h-100">
-                  <?php foreach($files as $k => $img): ?>
-                  <div class="carousel-item  h-100 <?php echo $k == 0? 'active': '' ?>">
-                      <img class="d-block w-100  h-100" style="object-fit:contain" src="<?php echo $img ?>" alt="">
-                  </div>
-                  <?php endforeach; ?>
-              </div>
-          </div>
+          <div id="tourCarousel" class="carousel slide" data-ride="carousel" data-interval="4000" data-pause="false">
+    <div class="carousel-inner h-100 ">
+        <?php foreach ($files as $k => $img): ?>
+            <div class="carousel-item  h-100 img-with-border-and-shadow <?php echo $k == 0 ? 'active' : '' ?>">
+                <img class="d-block w-100 h-100" style="object-fit: contain;" src="<?php echo $img ?>" alt="">
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+
         </div>
       </div>
       <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12">
