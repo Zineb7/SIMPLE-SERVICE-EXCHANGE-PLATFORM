@@ -203,33 +203,7 @@ button {
             // Get the default coin value
             var defaultCoinValue = parseFloat('<?= isset($coin_value) ? $coin_value : 0 ?>');
 
-            // Get the total coin value from selected options
-            var totalCoinValue = 0;
-            const checkboxes = document.querySelectorAll('input[name^="options_list"]:checked');
-            checkboxes.forEach((checkbox) => {
-                totalCoinValue += parseFloat(checkbox.value);});	
-    $.ajax({
-				url:_base_url_+"classes/Master.php?f=save_post",
-				data: new FormData($(this)[0]),
-                cache: false,
-                contentType: false,
-                processData: false,
-                method: 'POST',
-                type: 'POST',
-                dataType: 'json',
-				error:err=>{
-					console.log(err)
-					alert_toast("An error occured",'error');
-					end_loader();
-				},
-				success:function(resp){
-					if(typeof resp =='object' && resp.status == 'success'){
-						location.href = "./?page=posts/view_post&id="+resp.aid
-					}else if(resp.status == 'failed' && !!resp.msg){
-                        var el = $('<div>')
-                            el.addClass("alert alert-danger err-msg").text(resp.msg)
-                            _this.prepend(el)
-                            el.show('slow')
+            s
                             $("html, body, .modal").scrollTop(0)
                             end_loader()
                     }else{

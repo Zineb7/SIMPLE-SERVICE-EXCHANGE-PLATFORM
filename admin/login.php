@@ -14,9 +14,17 @@
       backdrop-filter: contrast(1);
     }
     #page-title{
-      text-shadow: 6px 4px 7px black;
+      font-size: 45px;
+  text-align: center;
+  line-height: 1.5em;
+  padding-bottom: 45px;
+  font-family: "Playfair Display", serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #777;
+  /* Add a slight blue text shadow */
+  text-shadow: 6px 4px 7px #8DBAFA;
       font-size: 3.5em;
-      color: #fff4f4 !important;
       background: #8080801c;
     }
   </style>

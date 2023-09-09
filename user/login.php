@@ -29,6 +29,7 @@
   color: #777;
   /* Add a slight blue text shadow */
   text-shadow: 2px 2px 4px #8DBAFA;
+  background: #8080801c;
 }
 
 #page-title h1:before {
