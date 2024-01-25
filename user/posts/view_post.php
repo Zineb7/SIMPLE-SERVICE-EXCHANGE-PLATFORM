@@ -57,6 +57,7 @@ if ($qry_options->num_rows > 0) {
 				<div class="container-fluid">
 					<div class="d-flex w-100 align-items-center">
 						<div class="col-auto">
+							
 							<img src="<?= validate_image(isset($avatar) ? $avatar : '') ?>" alt="" class="avatar-img img-thumbnail rounded-circle p-0">
 						</div>
 						<div class="col-auto flex-shrink-1 flex-grow-1">
@@ -93,7 +94,7 @@ if ($qry_options->num_rows > 0) {
 					<a href="javascript:void(0)" class="seemore d-none">Read More</a>
 					<a href="javascript:void(0)" class="seeless d-none">Show Less</a>
 				</div>
-
+					<!--
 					<div class="container-fluid bg-gradient-light" style="height: 30em !important">
 							<?php 
 							
@@ -137,7 +138,7 @@ if ($qry_options->num_rows > 0) {
 							<?php endif; ?>
 							
 							
-						</div>
+						</div>-->
 
 					<hr class="mx-n4">
 					<?php if(isset($qry_like) && !! $qry_like): ?>
@@ -217,7 +218,7 @@ if ($qry_options->num_rows > 0) {
 
     // Fetch members who clicked on handshake for this post with pagination and ratings
     $qry_handshake_members = $conn->query("SELECT ch.`id`, CONCAT(m.firstname, ' ', m.lastname) AS full_name, m.coin, ch.date_clicked, ch.status,
-                                                sr.rating, sr.comment
+                                                sr.rating
                                           FROM `checkhand_list` ch
                                           INNER JOIN `member_list` m ON ch.member_id = m.id
                                           LEFT JOIN `service_ratings` sr ON ch.member_id = sr.receiver_id AND ch.post_id = sr.provider_id
@@ -233,7 +234,7 @@ if ($qry_options->num_rows > 0) {
             <th>Name</th>
             <th>Balance</th>
             <th>Request Date</th>
-            <th>Rating</th>
+            <!--<th>Rating</th>-->
             <th>Action</th>
         </tr>
     </thead>
@@ -243,7 +244,7 @@ if ($qry_options->num_rows > 0) {
                 <td><?= $handshake_member['full_name'] ?></td>
                 <td><?= $handshake_member['coin'] ?></td>
                 <td><?= date("M d, Y h:i A", strtotime($handshake_member['date_clicked'])) ?></td>
-                <td><?= $handshake_member['rating'] ?></td>
+                <!--<td><?= $handshake_member['rating'] ?></td>-->
                        <td>
             <?php if ($handshake_member['status'] == 0): ?>
                 <!-- Accept handshake form -->

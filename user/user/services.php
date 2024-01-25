@@ -189,7 +189,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>Post Link</th>
                                         <th>Coin Exchanged</th>
                                         <th>Status</th>
                                         <th>Date Accepted</th>
@@ -221,10 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         }
                                         ?>
                                         <tr>
-                                            <td>
-                                                <!-- Link to view_post page with the corresponding post ID -->
-                                                <a href="?page=posts/view_post&id=<?= $row['id'] ?>"><?= $row['id'] ?></a>
-                                            </td>
+                                            
 
                                             <td>
                                                 <?= $row['coin_value'] ?>
@@ -380,6 +376,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($check_query_exists->num_rows > 0) {
                 // If a query with status = 3 exists, disable the button and change its color
+                
                 echo '<button id="btn_acceptFinish_' . $postId . '" class="btn btn-secondary btn-action btn-fixed-width"   style="background-color: #28a745 !important; border-color: #28a745 !important;" disabled>Accept Finish</button>';
             } else {
                 // If the query doesn't exist, display the button normally
@@ -498,12 +495,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             $insert_coin_list_qry = $conn->query("INSERT INTO coin_list (sender_id, receiver_id, post_id, coins_exchanged, date_created, date_updated, deadline, status) 
                                                      VALUES ('{$providerId}', '{$ownerId}', '{$postId}', '{$coinsExchanged}', 
                                                              '{$dateNow}', '{$dateNow}', '{$dateNow}', '3')");
+                                        $rating = 5; // You can set the rating value here
+       
+
+                                        /*$insert_rating_qry = $conn->query("INSERT INTO service_rating (provider_id, receiver_id, rating, date_rated) 
+                                                    VALUES ('{$providerId}', '{$ownerId}', '{$rating}', '{$dateNow}')");*/
+
 
                                             if ($insert_coin_list_qry) {
                                                 // Insert successful, disable the button after successful insertion
-                                                $update_sender_balance_qry = $conn->query("UPDATE member_list 
+                                                /*$update_sender_balance_qry = $conn->query("UPDATE member_list 
                                                              SET coin = coin + {$coinsExchanged} 
-                                                             WHERE id = '{$providerId}'");
+                                                             WHERE id = '{$ownerId}'");*/
+                                                $update_owner_balance_qry = $conn->query("UPDATE member_list 
+                                                SET coin = coin - {$coinsExchanged} 
+                                                WHERE id = '{$ownerId}'");
+                                                $update_owner1_balance_qry = $conn->query("UPDATE member_list 
+                                                SET coin = coin + {$coinsExchanged} 
+                                                WHERE id = '{$providerId}'");
                                                 // Disable the button after successful insertion and change its color
                                                 echo "<script>document.getElementById('btn_acceptFinish_{$postId}').setAttribute('disabled', true);
                                                 document.getElementById('btn_acceptFinish_{$postId}').classList.add('btn-disabled');</script>";

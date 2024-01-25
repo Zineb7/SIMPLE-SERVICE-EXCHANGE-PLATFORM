@@ -62,47 +62,7 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
 						<a href="javascript:void(0)" class="seemore d-none">Read More</a>
 						<a href="javascript:void(0)" class="seeless d-none">Show Less</a>
 					</div>
-					<div class="container-fluid bg-gradient-dark" style="height: 30em !important">
-						<?php 
-						if(isset($upload_path) && is_dir(base_app.$upload_path)):
-						$files = array();
-						$fopen = scandir(base_app.$upload_path);
-						if(count($fopen) > 2):
-						?>
-						<?php 
-							foreach($fopen as $fname){
-							if(in_array($fname,array('.','..')))
-								continue;
-							$files[]= validate_image($upload_path.$fname);
-							}
-						?>
-						<div id="post<?= isset($id) ? $id:'' ?>"  class="carousel slide h-100" data-interval="false">
-						<ol class="carousel-indicators">
-								<?php foreach($files as $k => $img): ?>
-									<li data-target="#post<?= isset($id) ? $id:'' ?>" data-slide-to="<?= $k ?>" class=" <?php echo $k == 0? 'active': '' ?>"></li>
-								<?php endforeach; ?>
-						</ol>
-							<div class="carousel-inner h-100">
-								<?php foreach($files as $k => $img): ?>
-								<div class="carousel-item  h-100 <?php echo $k == 0? 'active': '' ?>">
-									<img class="d-block w-100  h-100" style="object-fit:scale-down" src="<?php echo $img ?>" alt="">
-								</div>
-								<?php endforeach; ?>
-							</div>
-							<?php if(count($files) >1): ?>
-							<a class="carousel-control-prev" href="#post<?= isset($id) ? $id:'' ?>" role="button" data-slide="prev">
-								<span class="carousel-control-prev-icon" aria-hidden="true"></span>
-								<span class="sr-only">Previous</span>
-							</a>
-							<a class="carousel-control-next" href="#post<?= isset($id) ? $id:'' ?>" role="button" data-slide="next">
-								<span class="carousel-control-next-icon" aria-hidden="true"></span>
-								<span class="sr-only">Next</span>
-							</a>
-							<?php endif; ?>
-						</div>
-						<?php endif; ?>
-						<?php endif; ?>
-					</div>
+
 					<hr class="mx-n4">
 					<?php if(isset($qry_like) && !! $qry_like): ?>
 					<a href="javascript:void(0)" data-like='true' class="text-reset text-decoration-none like_post" data-id="<?= isset($id) ? $id : '' ?>"><i class="fa fa-heart text-danger"></i></a>

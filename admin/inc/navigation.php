@@ -49,6 +49,14 @@
                       </a>
                     </li>
                     <li class="nav-item dropdown">
+                      <a href="<?php echo base_url ?>admin/?page=options/list" class="nav-link nav-options">
+                        <i class="nav-icon fas fa-filter"></i>
+                        <p>
+                          List of Options
+                        </p>
+                      </a>
+                    </li>
+                    <li class="nav-item dropdown">
                       <a href="<?php echo base_url ?>admin/?page=reclamations" class="nav-link nav-reclamations">
                       <i class="nav-icon fas fa-comment-dots"></i>
                         <p>

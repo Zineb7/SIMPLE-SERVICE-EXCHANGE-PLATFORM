@@ -76,6 +76,7 @@
               <a href="javascript:void(0)" class="seemore d-none">Read More</a>
               <a href="javascript:void(0)" class="seeless d-none">Show Less</a>
             </div>
+			<!--
             <div class="container-fluid bg-gradient-light" style="height: 30em !important">
               <?php 
               if(isset($row['upload_path']) && is_dir(base_app.$row['upload_path'])):
@@ -117,6 +118,7 @@
               <?php endif; ?>
               <?php endif; ?>
             </div>
+				-->
             <hr class="mx-n4">
             <?php if(isset($qry_like) && !! $qry_like): ?>
             <a href="javascript:void(0)" data-like='true' class="text-reset text-decoration-none like_post" data-id="<?= $row['id'] ?>"><i class="fa fa-heart text-danger"></i></a>

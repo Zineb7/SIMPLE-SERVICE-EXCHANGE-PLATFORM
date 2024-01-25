@@ -8,7 +8,9 @@ if(isset($_GET['id']) && $_GET['id'] > 0){
         }
     }
 }
+
 ?>
+
 <style>
 	#upload-images{
 		height:40em;
@@ -90,8 +92,11 @@ button {
   font-weight: bold;
 }
 </style>
+<?php
+$userCoinValue = 100; // Replace this with the actual user's coin value.
+?>
 <div class="container-fluid">
-	<form action="" id="post-form">
+	<form action="" id="post-form" method="post">
 		<input type="hidden" name ="id" value="<?php echo isset($id) ? $id : '' ?>">
 		<div class="form-group mb-3">
 			<label for="caption" class="control-label">Caption</label>
@@ -99,8 +104,10 @@ button {
 			<!--COINVALUE,TAGS, OPTIONS-->
 			<div class="form-group mb-3">
     <label for="coin_value" class="control-label">Coin Value</label>
-    <input type="number" min="0" max="1000" class="form-control form-control-sm rounded-0" id="coin_value" name="coin_value" value="<?= isset($coin_value) ? $coin_value : 0 ?>" required="required">
+	<input type="number" class="form-control form-control-sm rounded-0" id="coin_value" name="coin_value" value="<?= isset($coin_value) ? $coin_value : 0 ?>" required="required">
 </div>
+
+
 		</div>
 
 			<div class="form-group mb-3">
@@ -149,6 +156,7 @@ button {
 					</div>
 				</dd>
 			</dl>
+			<!--
 			<div id="upload-images" class="mt-4">
 				<h4 class="font-weight-bolder" id="upload-text">Drop your Photos Here</h4>
 				<div id="holder" class="w-100 px-3">
@@ -175,7 +183,10 @@ button {
 				</div>
 				<button id='select-upload' class='btn btn-primary bg-gradient-primary rounded-0' type='button'>Upload Photos</button>
 			</div>
+							-->
+							
 		</div>
+
 	</form>
 </div>
 <script>
@@ -185,25 +196,43 @@ button {
             var _this = $(this);
             $('.err-msg').remove();
 
-			 // Check if the total value is less than the default value
-			 if (totalCoinValue < defaultCoinValue) {
-                alert('Total coin value cannot be less than the default value.');
-                return; // Prevent form submission
-            }
-			 // Check if Caption, Coin Value, and Options checkboxes are empty
-			 var caption = $('#caption').val();
-            var coinValue = $('#coin_value').val();
-            var selectedOptions = $('input[name^="options_list"]:checked').length;
-
-            if (caption.trim() === '' || coinValue.trim() === '' || selectedOptions === 0) {
-                alert('Please fill in all required fields.');
-                return; // Prevent form submission
-            }
-
             // Get the default coin value
             var defaultCoinValue = parseFloat('<?= isset($coin_value) ? $coin_value : 0 ?>');
 
-            s
+            // Get the total coin value from selected options
+            var totalCoinValue = 0;
+            const checkboxes = document.querySelectorAll('input[name^="options_list"]:checked');
+            checkboxes.forEach((checkbox) => {
+                totalCoinValue += parseFloat(checkbox.value);
+            });
+
+            // Check if the total value is less than the default value
+            if (totalCoinValue < defaultCoinValue) {
+                alert('Total coin value cannot be less than the default value.');
+                return; // Prevent form submission
+            }
+    $.ajax({
+				url:_base_url_+"classes/Master.php?f=save_post",
+				data: new FormData($(this)[0]),
+                cache: false,
+                contentType: false,
+                processData: false,
+                method: 'POST',
+                type: 'POST',
+                dataType: 'json',
+				error:err=>{
+					console.log(err)
+					alert_toast("An error occured",'error');
+					end_loader();
+				},
+				success:function(resp){
+					if(typeof resp =='object' && resp.status == 'success'){
+						location.href = "./?page=posts/view_post&id="+resp.aid
+					}else if(resp.status == 'failed' && !!resp.msg){
+                        var el = $('<div>')
+                            el.addClass("alert alert-danger err-msg").text(resp.msg)
+                            _this.prepend(el)
+                            el.show('slow')
                             $("html, body, .modal").scrollTop(0)
                             end_loader()
                     }else{
@@ -276,7 +305,6 @@ button {
 		})
 
 	})
-
 	//DISPLAYED VALUES AFTER CHECKING BOXES OPTIONS
 	function updateSelectedNames(checkbox) {
     const selectedNames = [];
@@ -357,3 +385,25 @@ updateMinCoinValue();
 	
 
 </script>
+<?php
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Récupérez la valeur du coin de l'utilisateur (assumons que c'est stocké dans une variable $userCoin)
+    $userCoin = floatval($_POST['coin']); // Assurez-vous que 'coin' correspond au nom de votre champ de coin d'utilisateur
+	$totalSelectedCoins = floatval($_POST['coin_value']);
+
+    // Vérifiez si le total des coins dépasse le coin de l'utilisateur
+    if ($totalSelectedCoins > $userCoin) {
+        // Le total des coins dépasse le coin de l'utilisateur
+        // Vous pouvez afficher un message d'erreur ou rediriger l'utilisateur vers une page d'erreur
+        echo json_encode(['status' => 'failed', 'msg' => 'Le total des coins ne peut pas dépasser votre coin.']);
+        exit; // Arrêtez le script ici pour éviter l'insertion du post
+    }
+
+    // Si la vérification réussit, continuez avec l'insertion du post
+    // ... Code pour insérer le post dans la base de données ...
+
+    // Vous pouvez ensuite rediriger l'utilisateur vers une page de succès ou renvoyer une réponse JSON réussie
+    echo json_encode(['status' => 'success', 'aid' => $postID]); // Assurez-vous d'ajuster $postID en fonction de votre logique d'insertion
+    exit;
+}
+?>
